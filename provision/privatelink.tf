@@ -62,7 +62,7 @@ resource "aws_security_group" "pl" {
   }
 
   tags = merge({
-    Name = "${local.prefix}-PL-SG"
+    Name = "${local.prefix}-PL-sg"
   },
   var.tags)
 }
