@@ -4,7 +4,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.2.0"
 
-  name = local.prefix
+  name = "${local.prefix}-vpc"
   cidr = var.cidr_block
   azs  = data.aws_availability_zones.available.names
   tags = var.tags
@@ -23,9 +23,33 @@ module "vpc" {
   manage_default_security_group = true
   default_security_group_name   = "${local.prefix}-sg"
 
-  default_security_group_egress = [{
-    cidr_blocks = "0.0.0.0/0"
-  }]
+  default_security_group_egress = [
+    {
+      protocol = "tcp"
+      from_port = 443
+      to_port = 443
+      cidr_blocks = "0.0.0.0/0"
+      description = "TLS Traffic"
+    },
+    {
+      protocol = "tcp"
+      from_port = 6666
+      to_port = 6666
+      cidr_blocks = "0.0.0.0/0"
+      description = "Relay Traffic"
+    },
+    {
+      protocol = "tcp"
+      from_port = 3306
+      to_port = 3306
+      cidr_blocks = "0.0.0.0/0"
+      description = "Hive Metastore Traffic"
+    },
+    {
+      self = true
+      description = "Allow all internal TCP and UDP"
+    }
+  ]
 
   default_security_group_ingress = [{
     description = "Allow all internal TCP and UDP"
@@ -103,6 +127,7 @@ resource "databricks_mws_networks" "this" {
 
 resource "aws_default_network_acl" "main" {
   default_network_acl_id = module.vpc.default_network_acl_id
+  subnet_ids = concat(module.vpc.private_subnets, [aws_subnet.pl_subnet.id])
 
   ingress {
     protocol   = "all"
