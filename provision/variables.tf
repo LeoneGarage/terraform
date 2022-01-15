@@ -43,6 +43,10 @@ variable "private_dns_enabled" {
   default = false
 }
 
+variable "databricks_workspace_name" {
+  default = ""
+}
+
 resource "random_string" "naming" {
   special = false
   upper   = false
@@ -50,7 +54,7 @@ resource "random_string" "naming" {
 }
 
 locals {
-  prefix = "terratest"//"demo${random_string.naming.result}"
+  prefix = var.databricks_workspace_name=="" ? "terratest-${random_string.naming.result}" : var.databricks_workspace_name
   private_link = {
     workspace_service = "com.amazonaws.vpce.ap-southeast-2.vpce-svc-0b87155ddd6954974"
     relay_service = "com.amazonaws.vpce.ap-southeast-2.vpce-svc-0b4a72e8f825495f6"
