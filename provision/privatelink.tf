@@ -61,15 +61,17 @@ resource "aws_security_group" "pl" {
     security_groups = [module.vpc.default_security_group_id]
   }
 
-  tags = {
-    Name = "Databricks PL SG"
-  }
+  tags = merge({
+    Name = "${local.prefix}-PL-SG"
+  },
+  var.tags)
 }
 
 resource "aws_vpc_endpoint" "workspace" {
-  tags = {
+  tags = merge({
     Name = "${local.prefix}-db-workspace-vpc-endpoint"
-  }
+  },
+  var.tags)
   vpc_id             = module.vpc.vpc_id
   service_name       = local.private_link.workspace_service
   vpc_endpoint_type  = "Interface"
@@ -80,9 +82,10 @@ resource "aws_vpc_endpoint" "workspace" {
 }
 
 resource "aws_vpc_endpoint" "relay" {
-  tags = {
+  tags = merge({
     Name = "${local.prefix}-db-relay-vpc-endpoint"
-  }
+  },
+  var.tags)
   vpc_id             = module.vpc.vpc_id
   service_name       = local.private_link.relay_service
   vpc_endpoint_type  = "Interface"
@@ -95,9 +98,10 @@ resource "aws_vpc_endpoint" "relay" {
 resource "aws_subnet" "pl_subnet" {
   vpc_id     = module.vpc.vpc_id
   cidr_block = cidrsubnet(var.cidr_block, 12, 0)
-  tags = {
+  tags = merge({
     Name = "${local.prefix}-pl-subnet"
-  }
+  },
+  var.tags)
 }
 
 resource "databricks_mws_vpc_endpoint" "workspace" {
@@ -124,4 +128,5 @@ resource "databricks_mws_private_access_settings" "pas" {
   private_access_settings_name = "Private Access Settings for ${local.prefix}"
   region                       = var.region
   public_access_enabled        = true
+  private_access_level         = "ANY"
 }

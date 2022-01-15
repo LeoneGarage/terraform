@@ -47,37 +47,44 @@ module "vpc_endpoints" {
       route_table_ids = flatten([
         module.vpc.private_route_table_ids,
       module.vpc.public_route_table_ids])
-      tags = {
+      tags = merge({
         Name = "${local.prefix}-s3-vpc-endpoint"
-      }
+      },
+      var.tags)
     },
     sts = {
       service             = "sts"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags = {
+      tags = merge({
         Name = "${local.prefix}-sts-vpc-endpoint"
-      }
+      },
+      var.tags)
     },
     kinesis-streams = {
       service             = "kinesis-streams"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags = {
+      tags = merge({
         Name = "${local.prefix}-kinesis-vpc-endpoint"
-      }
+      },
+      var.tags)
     },
     glue = {
       service             = "glue"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
-      tags = {
+      tags = merge({
         Name = "${local.prefix}-glue-vpc-endpoint"
-      }
+      },
+      var.tags)
     }
   }
 
-  tags = var.tags
+  tags = merge({
+                  Name = "${local.prefix}-databricks-vpc"
+               },
+               var.tags)
 }
 
 resource "databricks_mws_networks" "this" {
@@ -142,7 +149,8 @@ resource "aws_default_network_acl" "main" {
     cidr_block  = "${var.cidr_block}"
   }
 
-  tags = {
-    Name = "main"
-  }
+  tags = merge({
+    Name = "${local.prefix}-default-vpc-nacl"
+  },
+  var.tags)
 }
