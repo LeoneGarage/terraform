@@ -76,8 +76,8 @@ resource "aws_vpc_endpoint" "workspace" {
   service_name       = local.private_link.workspace_service
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl.id]
-  subnet_ids         = [aws_subnet.pl_subnet.id]
-  depends_on         = [aws_subnet.pl_subnet, aws_security_group.pl]
+  subnet_ids         = [aws_subnet.pl_subnet1.id, aws_subnet.pl_subnet2.id]
+  depends_on         = [aws_subnet.pl_subnet1, aws_subnet.pl_subnet2, aws_security_group.pl]
   private_dns_enabled = var.private_dns_enabled
 }
 
@@ -90,19 +90,35 @@ resource "aws_vpc_endpoint" "relay" {
   service_name       = local.private_link.relay_service
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl.id]
-  subnet_ids         = [aws_subnet.pl_subnet.id]
-  depends_on         = [aws_subnet.pl_subnet, aws_security_group.pl]
+  subnet_ids         = [aws_subnet.pl_subnet1.id, aws_subnet.pl_subnet2.id]
+  depends_on         = [aws_subnet.pl_subnet1, aws_subnet.pl_subnet2, aws_security_group.pl]
   private_dns_enabled = var.private_dns_enabled
 }
 
-resource "aws_subnet" "pl_subnet" {
+resource "aws_subnet" "pl_subnet1" {
   vpc_id     = module.vpc.vpc_id
-  cidr_block = cidrsubnet(var.cidr_block, 12, 0)
+  availability_zone = data.aws_availability_zones.available.names[0]
+  cidr_block = cidrsubnet(cidrsubnet(local.cidr_block, var.subnet_offset, pow(2, var.subnet_offset)-1),
+   32 - var.cidr_block_prefix - var.subnet_offset - 4,
+    510)
   tags = merge({
-    Name = "${local.prefix}-pl-subnet"
+    Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[0]}"
   },
   var.tags)
 }
+
+resource "aws_subnet" "pl_subnet2" {
+  vpc_id     = module.vpc.vpc_id
+  availability_zone = data.aws_availability_zones.available.names[1]
+  cidr_block = cidrsubnet(cidrsubnet(local.cidr_block, var.subnet_offset, pow(2, var.subnet_offset)-1),
+   32 - var.cidr_block_prefix - var.subnet_offset - 4,
+    511)
+  tags = merge({
+    Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[1]}"
+  },
+  var.tags)
+}
+
 
 resource "databricks_mws_vpc_endpoint" "workspace" {
   provider            = databricks.mws

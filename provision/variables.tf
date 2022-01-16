@@ -22,18 +22,17 @@ variable "tags" {
   default = {}
 }
 
-variable "cidr_block" {
-  default = "10.0.0.0/16"
+variable "cidr_block_host" {
+  default = "10.0.0.0"
+}
+
+variable "cidr_block_prefix" {
+  default = "16"
 }
 
 variable "subnet_offset" {
   default = 3
 }
-
-variable "cidr_pl_block" {
-  default = "10.0.0.0/28"
-}
-
 
 variable "region" {
   default = "ap-southeast-2"
@@ -55,6 +54,7 @@ resource "random_string" "naming" {
 
 locals {
   prefix = var.databricks_workspace_name=="" ? "terratest-${random_string.naming.result}" : var.databricks_workspace_name
+  cidr_block = "${var.cidr_block_host}/${var.cidr_block_prefix}"
   private_link = {
     workspace_service = "com.amazonaws.vpce.ap-southeast-2.vpce-svc-0b87155ddd6954974"
     relay_service = "com.amazonaws.vpce.ap-southeast-2.vpce-svc-0b4a72e8f825495f6"

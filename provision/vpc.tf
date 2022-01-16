@@ -5,7 +5,7 @@ module "vpc" {
   version = "3.2.0"
 
   name = "${local.prefix}-vpc"
-  cidr = var.cidr_block
+  cidr = local.cidr_block
   azs  = data.aws_availability_zones.available.names
   tags = var.tags
 
@@ -16,8 +16,8 @@ module "vpc" {
 
 //  public_subnets = [cidrsubnet(var.cidr_block, var.subnet_offset, 1)]
   private_subnets = [
-    cidrsubnet(var.cidr_block, var.subnet_offset, 2),
-    cidrsubnet(var.cidr_block, var.subnet_offset, 3)
+    cidrsubnet(local.cidr_block, var.subnet_offset, 0),
+    cidrsubnet(local.cidr_block, var.subnet_offset, 1)
   ]
 
   manage_default_security_group = true
@@ -127,7 +127,7 @@ resource "databricks_mws_networks" "this" {
 
 resource "aws_default_network_acl" "main" {
   default_network_acl_id = module.vpc.default_network_acl_id
-  subnet_ids = concat(module.vpc.private_subnets, [aws_subnet.pl_subnet.id])
+  subnet_ids = concat(module.vpc.private_subnets, [aws_subnet.pl_subnet1.id, aws_subnet.pl_subnet2.id])
 
   ingress {
     protocol   = "all"
@@ -171,7 +171,7 @@ resource "aws_default_network_acl" "main" {
     from_port   = 0
     to_port     = 0
     protocol    = "all"
-    cidr_block  = "${var.cidr_block}"
+    cidr_block  = "${local.cidr_block}"
   }
 
   tags = merge({
