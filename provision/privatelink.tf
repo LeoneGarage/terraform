@@ -77,8 +77,14 @@ resource "aws_vpc_endpoint" "workspace" {
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl.id]
   subnet_ids         = [aws_subnet.pl_subnet1.id, aws_subnet.pl_subnet2.id]
-  depends_on         = [aws_subnet.pl_subnet1, aws_subnet.pl_subnet2, aws_security_group.pl]
   private_dns_enabled = var.private_dns_enabled
+  depends_on         = [
+    aws_subnet.pl_subnet1,
+    aws_subnet.pl_subnet2,
+    aws_route_table_association.pl_subnet1_route_table_assoc,
+    aws_route_table_association.pl_subnet2_route_table_assoc,
+    aws_security_group.pl
+  ]
 }
 
 resource "aws_vpc_endpoint" "relay" {
@@ -91,16 +97,20 @@ resource "aws_vpc_endpoint" "relay" {
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl.id]
   subnet_ids         = [aws_subnet.pl_subnet1.id, aws_subnet.pl_subnet2.id]
-  depends_on         = [aws_subnet.pl_subnet1, aws_subnet.pl_subnet2, aws_security_group.pl]
   private_dns_enabled = var.private_dns_enabled
+  depends_on         = [
+    aws_subnet.pl_subnet1,
+    aws_subnet.pl_subnet2,
+    aws_route_table_association.pl_subnet1_route_table_assoc,
+    aws_route_table_association.pl_subnet2_route_table_assoc,
+    aws_security_group.pl
+  ]
 }
 
 resource "aws_subnet" "pl_subnet1" {
   vpc_id     = module.vpc.vpc_id
   availability_zone = data.aws_availability_zones.available.names[0]
-  cidr_block = cidrsubnet(cidrsubnet(local.cidr_block, var.subnet_offset, pow(2, var.subnet_offset)-1),
-   32 - var.cidr_block_prefix - var.subnet_offset - 4,
-    510)
+  cidr_block = local.small_subnet_cidrs[0]
   tags = merge({
     Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[0]}"
   },
@@ -110,15 +120,31 @@ resource "aws_subnet" "pl_subnet1" {
 resource "aws_subnet" "pl_subnet2" {
   vpc_id     = module.vpc.vpc_id
   availability_zone = data.aws_availability_zones.available.names[1]
-  cidr_block = cidrsubnet(cidrsubnet(local.cidr_block, var.subnet_offset, pow(2, var.subnet_offset)-1),
-   32 - var.cidr_block_prefix - var.subnet_offset - 4,
-    511)
+  cidr_block = local.small_subnet_cidrs[1]
   tags = merge({
     Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[1]}"
   },
   var.tags)
 }
 
+resource "aws_route_table" "pl_subnet_route_table" {
+  vpc_id = module.vpc.vpc_id
+
+  tags = merge({
+    Name = "${local.prefix}-pl-subnet-route-table"
+  },
+  var.tags)
+}
+
+resource "aws_route_table_association" "pl_subnet1_route_table_assoc" {
+  subnet_id = aws_subnet.pl_subnet1.id
+  route_table_id = aws_route_table.pl_subnet_route_table.id
+}
+
+resource "aws_route_table_association" "pl_subnet2_route_table_assoc" {
+  subnet_id = aws_subnet.pl_subnet2.id
+  route_table_id = aws_route_table.pl_subnet_route_table.id
+}
 
 resource "databricks_mws_vpc_endpoint" "workspace" {
   provider            = databricks.mws

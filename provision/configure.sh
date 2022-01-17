@@ -6,6 +6,7 @@ ACCOUNT_ID=
 USERNAME=
 PASSWORD=
 VARFILE=
+WORKSPACE_NAME=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -32,6 +33,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -w|--workspace)
+      WORKSPACE_NAME="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -41,19 +47,21 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-if [ -n "$ACCOUNT_ID" ]; then
-export TF_VAR_databricks_account_id=$ACCOUNT_ID
-fi
-if [ -n "$USERNAME" ]; then
-export TF_VAR_databricks_account_username=$USERNAME
-fi
-if [ -n "$PASSWORD" ]; then
-export TF_VAR_databricks_account_password=$PASSWORD
-fi
-
 TFAPPLY=(terraform apply -auto-approve) # terraform apply innitial command
 if [ -n "$VARFILE" ]; then
 TFAPPLY+=( -var-file=$VARFILE)
+fi
+if [ -n "$ACCOUNT_ID" ]; then
+TFAPPLY+=( -var="databricks_account_id=$ACCOUNT_ID")
+fi
+if [ -n "$USERNAME" ]; then
+TFAPPLY+=( -var="databricks_account_username=$USERNAME")
+fi
+if [ -n "$PASSWORD" ]; then
+TFAPPLY+=( -var="databricks_account_username=$PASSWORD")
+fi
+if [ -n "$WORKSPACE_NAME" ]; then
+TFAPPLY+=( -var="databricks_workspace_name=$WORKSPACE_NAME")
 fi
 
 terraform init

@@ -46,6 +46,10 @@ variable "databricks_workspace_name" {
   default = ""
 }
 
+variable "allow_outgoing_internet" {
+  default = false
+}
+
 resource "random_string" "naming" {
   special = false
   upper   = false
@@ -59,4 +63,8 @@ locals {
     workspace_service = "com.amazonaws.vpce.ap-southeast-2.vpce-svc-0b87155ddd6954974"
     relay_service = "com.amazonaws.vpce.ap-southeast-2.vpce-svc-0b4a72e8f825495f6"
   }
+
+  small_subnet_cidrs = [for i in range(0, 10) : cidrsubnet(cidrsubnet(local.cidr_block, var.subnet_offset, pow(2, var.subnet_offset)-1),
+   32 - var.cidr_block_prefix - var.subnet_offset - 4,
+    511-i)]
 }

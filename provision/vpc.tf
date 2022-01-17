@@ -10,11 +10,11 @@ module "vpc" {
   tags = var.tags
 
   enable_dns_hostnames = true
-  enable_nat_gateway   = false
+  enable_nat_gateway   = var.allow_outgoing_internet
   single_nat_gateway   = false
-  create_igw           = false
+  create_igw           = var.allow_outgoing_internet
 
-//  public_subnets = [cidrsubnet(var.cidr_block, var.subnet_offset, 1)]
+  public_subnets = !var.allow_outgoing_internet ? [] : [local.small_subnet_cidrs[2], local.small_subnet_cidrs[3]]
   private_subnets = [
     cidrsubnet(local.cidr_block, var.subnet_offset, 0),
     cidrsubnet(local.cidr_block, var.subnet_offset, 1)
