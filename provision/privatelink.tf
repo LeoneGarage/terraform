@@ -1,3 +1,10 @@
+locals {
+  cidr_blocks = [cidrsubnet(local.cidr_block, var.subnet_offset, 0),
+     cidrsubnet(local.cidr_block, var.subnet_offset, 1),
+     aws_subnet.pl_subnet1.cidr_block,
+     aws_subnet.pl_subnet2.cidr_block]
+}
+
 resource "aws_security_group" "pl" {
   name        = "${local.prefix}-pl-sg"
   description = "Security Group for Private Link"
@@ -8,28 +15,14 @@ resource "aws_security_group" "pl" {
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    self             = true
-  }
-  ingress {
-    description      = "REST API Traffic"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    security_groups = [module.vpc.default_security_group_id]
+    cidr_blocks      = local.cidr_blocks
   }
   ingress {
     description      = "Relay Traffic"
     from_port        = 6666
     to_port          = 6666
     protocol         = "tcp"
-    self             = true
-  }
-  ingress {
-    description      = "Relay Traffic"
-    from_port        = 6666
-    to_port          = 6666
-    protocol         = "tcp"
-    security_groups = [module.vpc.default_security_group_id]
+    cidr_blocks      = local.cidr_blocks
   }
 
   egress {
@@ -37,28 +30,14 @@ resource "aws_security_group" "pl" {
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    self             = true
-  }
-  egress {
-    description      = "REST API Traffic"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    security_groups = [module.vpc.default_security_group_id]
+    cidr_blocks      = local.cidr_blocks
   }
   egress {
     description      = "Relay Traffic"
     from_port        = 6666
     to_port          = 6666
     protocol         = "tcp"
-    self             = true
-  }
-  egress {
-    description      = "Relay Traffic"
-    from_port        = 6666
-    to_port          = 6666
-    protocol         = "tcp"
-    security_groups = [module.vpc.default_security_group_id]
+    cidr_blocks      = local.cidr_blocks
   }
 
   tags = merge({

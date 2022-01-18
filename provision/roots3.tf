@@ -11,6 +11,14 @@ resource "aws_s3_bucket" "root_storage_bucket" {
   })
 }
 
+resource "aws_s3_bucket_ownership_controls" "root_storage_bucket" {
+  bucket = aws_s3_bucket.root_storage_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "root_storage_bucket" {
   bucket                  = aws_s3_bucket.root_storage_bucket.id
   block_public_acls       = true
