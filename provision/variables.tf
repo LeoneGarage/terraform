@@ -66,5 +66,5 @@ locals {
 
   small_subnet_cidrs = [for i in range(0, 10) : cidrsubnet(cidrsubnet(local.cidr_block, var.subnet_offset, pow(2, var.subnet_offset)-1),
    32 - var.cidr_block_prefix - var.subnet_offset - 4,
-    511-i)]
+    pow(2, 32 - var.cidr_block_prefix - var.subnet_offset - 4) - 1 - i)]
 }
