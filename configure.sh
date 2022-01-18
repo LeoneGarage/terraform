@@ -24,7 +24,11 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 pushd provision
+if [ -n "$WORKSPACE_NAME" ]; then
 ./configure.sh -vf secrets.tfvars -w $WORKSPACE_NAME
+else
+./configure.sh -vf secrets.tfvars
+fi
 popd
 
 pushd workspace
