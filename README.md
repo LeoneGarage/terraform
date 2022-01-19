@@ -44,7 +44,7 @@ These are your Databricks Account Id that you can get from Databricks Account Co
 
 ### Steps to tear down deployment
 To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
-Running *destroy.sh* does not require any arguments. Terraform maintains state of deployment in a state file as deployment steps are executed and it simply reverses the steps that were executed when deploying and cleanly deletes all the resources that were previosuly deployed.
+Running *destroy.sh* does not require any arguments. Terraform maintains state of deployment in a state file as deployment steps are executed and it simply reverses the steps that were executed when deploying and cleanly deletes all the resources that were previosly deployed.
 
 ### NOTE
 * If you are creating a PL Databricks Workspace the S3 VPC Gateway prevents access to global S3 url. Access to regional one only is allowed. For PL Workspaces with newly created S3 buckets sometimes it may take a bit of time to gain access to regional root S3 bucket, bypassing S3 global url. It may happen that running Test Notebook hangs due to trying to resolve S3 root bucket for DBFS mounts. In that case leaving the Workspace for an hour or so resolves the issue eventually.
