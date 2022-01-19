@@ -11,7 +11,7 @@ Running the templates will do the following:
 * Create a Test cluster with access to Glue Catalog and a Test Notebook to test the setup
 
 Note, at this stage public access is on for Front End Workspace UI access, only the Back End Dataplane to Control Plane is configured with PL access.
-Support for provate access for Front End will be added to this template at a later stage.
+Support for private access for Front End will be added to this template at a later stage.
 
 #### Content
 There are 2 subdirectories, *provision* and *workspace*. Each contains individual terraform templates.
