@@ -24,11 +24,18 @@ The whole thing is executed by running ./configure.sh script from root directory
 1. Install Terraform. For Mac, this is described in https://learn.hashicorp.com/tutorials/terraform/install-cli.
 2. Clone this repo to your machine. 
 3. In *provision* create a file called *secrets.tfvars*. This file should have the following variables:
-> databricks_account_id = "\<databricks account id\>"
->
-> databricks_account_username = "\<databricks account owner username\>"
->
-> databricks_account_password = "\<databricks account owner password\>"
+> databricks_account_id       = "\<databricks account id>"<br>
+> databricks_account_username = "\<databricks account owner username>"<br>
+> databricks_account_password = "\<databricks account owner password>"<br>
 
+These are your Databricks Account Id that yo can get from Databricks Account Console, Your Databricks Account Owner User Name and Databricks Account Owner Password. Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
+
+4. Once you created *secrets.tfvars* file in *provision* subdirectory, back in root directory there is a script called *configure.sh*. Run this script and pass to it *-w <your workspace name>* parameter. So for example, if I want to create a Databricks Workspace called **demo**, I would run *./configure.sh -w demo* on command line.
+5. The script will apply the template in *provision* subdirectory and then run the teamplate in *workspace* subdirectory.
+6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook you can test on the Test cluster.
+
+### NOTE
+If you are creating a PL Databricks Workspace the S3 VPC Gateway prevents access to global S3 url. Access to regional onne only is allowed. It seems for PL Workspaces with newly created S3 buckets it takes some time for our Data Daemon that deals with DBFS storage to auto detect the regional root S3 bucket. There is ES open ticket about this https://databricks.atlassian.net/browse/SC-78500. It may happen that running Test Notebook hangs due to trying to resolve S3 root bucket for DBFS mounts. In that case leaving the Workspace for an hour or so resolves the issue eventually.
+Alternatively you can run with configure.sh with additional **-igw** flag. This will still deploy PrivateLink but also deploy NAT and IGW to allow outbound Internet access for any IPs not going via PrivateLink. In this case global S3 url is resolvable and everything works as expected.
 
 
