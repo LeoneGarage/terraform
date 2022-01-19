@@ -3,6 +3,7 @@
 set -e
 
 WORKSPACE_NAME=
+IGW=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -14,6 +15,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -igw)
+      IGW=true
+      shift # past argument
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -24,14 +29,17 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 pushd provision
+CONFIGURE=(./configure.sh -vf secrets.tfvars) # initial command
 if [ -n "$WORKSPACE_NAME" ]; then
-./configure.sh -vf secrets.tfvars -w $WORKSPACE_NAME
-else
-./configure.sh -vf secrets.tfvars
+CONFIGURE+=( -w $WORKSPACE_NAME )
 fi
+if [ -n "$IGW" ] && [ "$IGW" = "true" ]; then
+CONFIGURE+=( -igw )
+fi
+"${CONFIGURE[@]}"
 popd
 
 pushd workspace
 terraform init
-terraform apply  -auto-approve
+terraform apply -auto-approve
 popd

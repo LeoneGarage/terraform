@@ -7,6 +7,7 @@ USERNAME=
 PASSWORD=
 VARFILE=
 WORKSPACE_NAME=
+IGW=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -38,6 +39,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -igw)
+      IGW=true
+      shift # past argument
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -47,7 +52,7 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-TFAPPLY=(terraform apply -auto-approve) # terraform apply innitial command
+TFAPPLY=(terraform apply -auto-approve) # terraform apply initial command
 if [ -n "$VARFILE" ]; then
 TFAPPLY+=( -var-file=$VARFILE)
 fi
@@ -62,6 +67,9 @@ TFAPPLY+=( -var="databricks_account_username=$PASSWORD")
 fi
 if [ -n "$WORKSPACE_NAME" ]; then
 TFAPPLY+=( -var="databricks_workspace_name=$WORKSPACE_NAME")
+fi
+if [ -n "$IGW" ] && [ "$IGW" = "true" ]; then
+TFAPPLY+=( -var="allow_outgoing_internet=true")
 fi
 
 terraform init
