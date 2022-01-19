@@ -4,7 +4,7 @@
 This repo contains terraform templates and scripts for provisioning a E2 Databricks Workspace on AWS with PrivateLink. It includes all the AWS VPC infrastructure provisioning.
 
 Running the templates will do the following:
-* Provision AWS VPC in ap-southeast-2 regionn with 2 subnets in different AZs for the Workspace and 2 subnets in different AZs for PL (for redundancy)
+* Provision AWS VPC in ap-southeast-2 region with 2 subnets in different AZs for the Workspace and 2 subnets in different AZs for PL (for redundancy)
 * Provision Databricks PL for REST API and Relay integration and S3, STS, Kinesis, Glue PL for AWS
 * Provision E2 Databricks Workspace objects through Account API
 * Provision initial IAM Role with access to Glue Catalog
