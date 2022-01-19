@@ -15,7 +15,7 @@ Support for private access for Front End will be added to this template at a lat
 
 #### Content
 There are 2 subdirectories, *provision* and *workspace*. Each contains individual terraform templates.
-*provision* will provision AWS VPC infrastructure and configure Databricks Workspace with Account API. After this template is run succesfully, the Workspace should be accessible through it's url.
+*provision* will provision AWS VPC infrastructure and configure Databricks Workspace with Account API. After this template is run succesfully, the Workspace should be accessible through its url.
 *workspace* will use PAT created by *provision* step to configure a Cluster and a Notebook in the newly created Workspace.
 The whole thing is executed by running ./configure.sh script from root directory.
 
@@ -28,18 +28,18 @@ The whole thing is executed by running ./configure.sh script from root directory
 > databricks_account_username = "\<databricks account owner username>"<br>
 > databricks_account_password = "\<databricks account owner password>"<br>
 
-These are your Databricks Account Id that yo can get from Databricks Account Console, Your Databricks Account Owner User Name and Databricks Account Owner Password. Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
+These are your Databricks Account Id that you can get from Databricks Account Console, Your Databricks Account Owner User Name and Databricks Account Owner Password. Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
 
 4. Once you created *secrets.tfvars* file in *provision* subdirectory, back in root directory there is a script called *configure.sh*. Run this script and pass to it *-w <your workspace name>* parameter. So for example, if I want to create a Databricks Workspace called **demo**, I would run *./configure.sh -w demo* on command line.
 5. The script will apply the template in *provision* subdirectory and then run the teamplate in *workspace* subdirectory.
-6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook you can test on the Test cluster.
+6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook, created by the templates. You can run Test Notebook on Test cluster to verify that everything is working as it should.
 
 ### Usage
 **./configure.sh [-igw] [-w \<workspace name\>]**<br>
 | Argument              | Description    |
 | ---                   | ---            |
 |\-igw                  |- optional, if specified will still deploy with PL but also with NAT and IGW. Default is to deploy without NAT and IGW.<br> |
-|\-w \<workspace name\> |- optional, deployment artefacts will have specified \<workspace name\> prefix and the Workspace will be name \<workspace name\>. If not specified <workspace name> will default to **terratest-\<random string\>**<br> |
+|\-w \<workspace name\> |- optional, deployment artefacts will have specified \<workspace name\> prefix and the Workspace will be named \<workspace name\>. If not specified <workspace name> will default to **terratest-\<random string\>**<br> |
 
 ### Steps to tear down deployment
 To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
