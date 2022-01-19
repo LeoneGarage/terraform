@@ -34,8 +34,19 @@ These are your Databricks Account Id that yo can get from Databricks Account Con
 5. The script will apply the template in *provision* subdirectory and then run the teamplate in *workspace* subdirectory.
 6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook you can test on the Test cluster.
 
+### Usage
+**./configure.sh [-igw] [-w \<workspace name\>]**<br>
+| Argument              | Description    |
+| ---                   | ---            |
+|\-igw                  |- optional, if specified will still deploy with PL but also with NAT and IGW. Default is to deploy without NAT and IGW.<br> |
+|\-w \<workspace name\> |- optional, deployment artefacts will have specified \<workspace name\> prefix and the Workspace will be name \<workspace name\>. If not specified <workspace name> will default to **terratest-\<random string\>**<br> |
+
+### Steps to tear down deployment
+To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
+Running *destroy.sh* does not require any arguments. Terraform maintains state of deployment in a state file as deployment steps are executed and it simply reverses the steps that were executed when deploying and cleanly deletes all the resources that were previosuly deployed.
+
 ### NOTE
-If you are creating a PL Databricks Workspace the S3 VPC Gateway prevents access to global S3 url. Access to regional onne only is allowed. It seems for PL Workspaces with newly created S3 buckets it takes some time for our Data Daemon that deals with DBFS storage to auto detect the regional root S3 bucket. There is ES open ticket about this https://databricks.atlassian.net/browse/SC-78500. It may happen that running Test Notebook hangs due to trying to resolve S3 root bucket for DBFS mounts. In that case leaving the Workspace for an hour or so resolves the issue eventually.
+If you are creating a PL Databricks Workspace the S3 VPC Gateway prevents access to global S3 url. Access to regional one only is allowed. It seems for PL Workspaces with newly created S3 buckets sometimes it takes a bit of time for our Data Daemon that deals with DBFS storage to auto detect the regional root S3 bucket. There is ES open ticket about this https://databricks.atlassian.net/browse/SC-78500. It may happen that running Test Notebook hangs due to trying to resolve S3 root bucket for DBFS mounts. In that case leaving the Workspace for an hour or so resolves the issue eventually.
 Alternatively you can run with configure.sh with additional **-igw** flag. This will still deploy PrivateLink but also deploy NAT and IGW to allow outbound Internet access for any IPs not going via PrivateLink. In this case global S3 url is resolvable and everything works as expected.
 
 
