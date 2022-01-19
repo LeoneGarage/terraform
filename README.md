@@ -1,7 +1,7 @@
 # terraform
-### Databricks Terraform for provisioning AWS PL Workspaces
+### Databricks Terraform for provisioning Databricks E2 AWS PL Workspaces
 
-This repo contains terraform templates and scripts for provisioning a Databricks Workspace on AWS with PrivateLink. It includes all the AWS VPC infrastructure provisioning.
+This repo contains terraform templates and scripts for provisioning a E2 Databricks Workspace on AWS with PrivateLink. It includes all the AWS VPC infrastructure provisioning.
 
 Running the templates will do the following:
 * Provision AWS VPC in ap-southeast-2 regionn with 2 subnets in different AZs for the Workspace and 2 subnets in different AZs for PL (for redundancy)
