@@ -5,7 +5,7 @@ This repo contains terraform templates and scripts for provisioning a E2 Databri
 
 Running the templates will do the following:
 * Provision AWS VPC in ap-southeast-2 region with 2 subnets in different AZs for the Workspace and 2 subnets in different AZs for PL (for redundancy)
-* By default VPC CIDR is 10.0.0.0/16 and subnets 10.0.0.0/19. This gives you over 8000 IP addresses per subnet/AZ, so over 4000 cluster nodes. If you want to adjust these ranges you can modify *cidr_block_prefix* and *subnet_offset* varibales in *provision/variables.tf* files before running the template.
+* By default VPC CIDR is 10.0.0.0/16 and subnets 10.0.0.0/19. This gives you over 8000 IP addresses per subnet/AZ, so over 4000 cluster nodes. If you want to adjust these ranges you can modify *cidr_block_prefix* and *subnet_offset* variables in *provision/variables.tf* files before running the template.
 * Provision Databricks PL for REST API and Relay integration and S3, STS, Kinesis, Glue PL for AWS
 * Provision E2 Databricks Workspace objects through Account API
 * Provision initial IAM Role with access to Glue Catalog
