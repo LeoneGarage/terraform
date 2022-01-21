@@ -12,8 +12,11 @@ Running the templates will do the following:
 * Provision initial IAM Role with access to Glue Catalog
 * Create a Test cluster with access to Glue Catalog and a Test Notebook to test the setup
 
-Note, at this stage public access is on for Front End Workspace UI access, only the Back End Dataplane to Control Plane is configured with PL access.
-Support for private access for Front End will be added to this template at a later stage.
+Note, by default, the templates provision Back End Data Plane to Control Plane VPC Endpoints and allow public access for the Workspace UI.
+If you wish to also configure Front End VPC Endpoint there is a template in *provision* subdirectory called *front-end-privatelink.tf*.
+You will need to customize it and change the *count* argument of the 2 resources there, from 0 to 1.
+You may also want to change *databricks_mws_private_access_settings* resource's *public_access_enabled* argument to false in *provision/privatelink.tf* template to disallow public access except via PrivateLink and customise *private_access_level* argument.
+Beware, if you do turn off public access, Workspace configuration template in *workspace* subdirectory would then need to be run from a VPN or VM that can reach the Workspace, since with public access off the Workspace APIs will be unreachable except where netwrok routing to Front End VPC Endpoint is possible.
 
 #### Content
 There are 2 subdirectories, *provision* and *workspace*. Each contains individual terraform templates.
