@@ -17,6 +17,7 @@ If you wish to also configure Front End VPC Endpoint there is a template in *pro
 You will need to customize it and change the *count* argument of the 2 resources there, from 0 to 1.
 You may also want to change *databricks_mws_private_access_settings* resource's *public_access_enabled* argument to false in *provision/privatelink.tf* template to disallow public access except via PrivateLink and customise *private_access_level* argument.
 Beware, if you do turn off public access, Workspace configuration template in *workspace* subdirectory would then need to be run from a VPN or VM that can reach the Workspace, since with public access off the Workspace APIs will be unreachable except where netwrok routing to Front End VPC Endpoint is possible.
+In that scenario you may choose to run *provision.sh* script to only provision Databricks Workspace and run *workspace.sh* separately. These are described below.
 
 #### Content
 There are 2 subdirectories, *provision* and *workspace*. Each contains individual terraform templates.
@@ -49,6 +50,9 @@ Be careful with password as secrets in Terraform are stored in plain text. This 
 |-w \<workspace name\> |- optional, deployment artefacts will have specified \<workspace name\> prefix and the Workspace will be named \<workspace name\>. If not specified <workspace name> will default to **terratest-\<random string\>**<br> |
 |&#8209;nocmk&#160;all&#160;\|&#160;managed&#160;\|&#160;storage |- optional, Customer Managed Keys are created and configured for both managed services and root S3 bucket storage. This can be turned off. If you specify all, no CMK keys will be configured at all and default encryption in Control Plane will be used. If you specify managed, no managed services CMK encryption will be provisioned and default Control Plane encryption will be used instead. If you specify storage, no storage root S3 bucket CMK enncryption will be provisioned and default Control Plane encryption will be used instead |
 
+You may also run *provision* script independendently from *workspace* script.
+There is *provision.sh* script which is also called from *configure.sh* script that you can run which will only provision the Workspace. The arguments to *provision.sh* script are the same as *configure.sh* script described above.
+Subsequently, *workspace.sh* script can be run separately to configure the created Databrticks Workspace. *workspace.sh* script does not take any arguments, but needs access to terraform state that was created as part of runing *provision.sh*.
 
 ### Steps to tear down deployment
 To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
