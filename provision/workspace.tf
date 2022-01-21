@@ -16,6 +16,9 @@ resource "databricks_mws_workspaces" "this" {
   network_id               = databricks_mws_networks.this.network_id
   private_access_settings_id = databricks_mws_private_access_settings.pas.private_access_settings_id
 
+  managed_services_customer_managed_key_id = var.cmk_managed ? databricks_mws_customer_managed_keys.managed_services[0].customer_managed_key_id : null
+  storage_customer_managed_key_id = var.cmk_storage ? databricks_mws_customer_managed_keys.storage[0].customer_managed_key_id : null
+
   pricing_tier               = "ENTERPRISE"
 
   token {

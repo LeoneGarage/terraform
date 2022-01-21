@@ -8,6 +8,7 @@ PASSWORD=
 VARFILE=
 WORKSPACE_NAME=
 IGW=
+NOCMK=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -43,6 +44,11 @@ while [[ $# -gt 0 ]]; do
       IGW=true
       shift # past argument
       ;;
+    -nocmk|--no_customer_managed_keys)
+      NOCMK="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -70,6 +76,14 @@ TFAPPLY+=( -var="databricks_workspace_name=$WORKSPACE_NAME")
 fi
 if [ -n "$IGW" ] && [ "$IGW" = "true" ]; then
 TFAPPLY+=( -var="allow_outgoing_internet=true")
+fi
+if [ -n "$NOCMK" ]; then
+if [ "$NOCMK" = "all" ]; then
+TFAPPLY+=( -var="cmk_managed=false")
+TFAPPLY+=( -var="cmk_storage=false")
+else
+TFAPPLY+=( -var="cmk_$NOCMK=false")
+fi
 fi
 
 terraform init

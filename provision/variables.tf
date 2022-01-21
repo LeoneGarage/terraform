@@ -50,6 +50,15 @@ variable "allow_outgoing_internet" {
   default = false
 }
 
+variable "cmk_managed" {
+  default = true
+}
+
+variable "cmk_storage" {
+  default = true
+}
+
+
 resource "random_string" "naming" {
   special = false
   upper   = false
