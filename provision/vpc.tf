@@ -10,11 +10,11 @@ module "vpc" {
   tags = var.tags
 
   enable_dns_hostnames = true
-  enable_nat_gateway   = var.allow_outgoing_internet
+  enable_nat_gateway   = var.allow_outgoing_internet || !var.private_link
   single_nat_gateway   = false
-  create_igw           = var.allow_outgoing_internet
+  create_igw           = var.allow_outgoing_internet || !var.private_link
 
-  public_subnets = !var.allow_outgoing_internet ? [] : [local.small_subnet_cidrs[2], local.small_subnet_cidrs[3]]
+  public_subnets = !(var.allow_outgoing_internet || !var.private_link) ? [] : [local.small_subnet_cidrs[2], local.small_subnet_cidrs[3]]
   private_subnets = [
     cidrsubnet(local.cidr_block, var.subnet_offset, 0),
     cidrsubnet(local.cidr_block, var.subnet_offset, 1)
@@ -118,16 +118,19 @@ resource "databricks_mws_networks" "this" {
   security_group_ids = [module.vpc.default_security_group_id]
   subnet_ids         = module.vpc.private_subnets
   vpc_id             = module.vpc.vpc_id
-  vpc_endpoints {
-    dataplane_relay = [databricks_mws_vpc_endpoint.relay.vpc_endpoint_id]
-    rest_api        = [databricks_mws_vpc_endpoint.workspace.vpc_endpoint_id]
+  dynamic "vpc_endpoints" {
+    for_each = var.private_link ? [1] : []
+    content {
+      dataplane_relay = [databricks_mws_vpc_endpoint.relay[0].vpc_endpoint_id]
+      rest_api        = [databricks_mws_vpc_endpoint.workspace[0].vpc_endpoint_id]
+    }
   }
   depends_on = [aws_vpc_endpoint.workspace, aws_vpc_endpoint.relay]
 }
 
 resource "aws_default_network_acl" "main" {
   default_network_acl_id = module.vpc.default_network_acl_id
-  subnet_ids = concat(module.vpc.private_subnets, [aws_subnet.pl_subnet1.id, aws_subnet.pl_subnet2.id])
+  subnet_ids = concat(module.vpc.private_subnets, var.private_link ? [aws_subnet.pl_subnet1[0].id, aws_subnet.pl_subnet2[0].id] : [])
 
   ingress {
     protocol   = "all"

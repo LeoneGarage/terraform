@@ -73,6 +73,10 @@ variable "front_end_access" {
   default = ""
 }
 
+variable "private_link" {
+  default = true
+}
+
 
 resource "random_string" "naming" {
   special = false

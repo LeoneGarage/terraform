@@ -7,12 +7,18 @@ USERNAME=
 PASSWORD=
 VARFILE=
 WORKSPACE_NAME=
+# Internet Gateway on or off
 IGW=
+# No Customer Managed Keys
 NOCMK=
+# Only run terraform plan not apply
 PLAN=
+# Private or Public access for PrivateLink Front End
 FRONT_END_ACCESS=
 FRONT_END_PL_SUBNET_IDS=
 FROND_END_PL_SOURCE_SUBNET_IDS=
+# PrivateLink on or off
+NOPL=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -44,7 +50,7 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -igw)
+    -igw|--internet-gateway)
       IGW=true
       shift # past argument
       ;;
@@ -53,7 +59,7 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -plan)
+    -plan|--plan)
       PLAN=true
       shift # past argument
       ;;
@@ -72,7 +78,14 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -nopl|--no-privatelink)
+      NOPL=true
+      # We also need NAT and IGW without PrivateLink
+      IGW=true
+      shift # past argument
+      ;;
     *)    # unknown option
+      echo "Unknown option $1"
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
       ;;
@@ -112,6 +125,9 @@ else
 TFAPPLY+=( -var="cmk_$NOCMK=false")
 fi
 fi
+if [ -n "$NOPL" ] && [ "$NOPL" = "true" ]; then
+TFAPPLY+=( -var="private_link=false")
+fi
 
 terraform init
 
@@ -127,6 +143,7 @@ fi
 # If $FRONT_END_PL_SUBNET_IDS is provided will also create Front End VPC Endpoint in those subnets
 "${TFAPPLY[@]}"
 
+# Now if required we will adjust private access after the Workspace is created so we don't have to access it's URL since this may render it inaccessible
 if [ -n "$FRONT_END_ACCESS" ]; then
 TFAPPLY+=( -var="front_end_access=$FRONT_END_ACCESS")
 fi

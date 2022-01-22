@@ -42,10 +42,11 @@ Be careful with password as secrets in Terraform are stored in plain text. This 
 6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook, created by the templates. You can run Test Notebook on Test cluster to verify that everything is working as it should.
 
 ### Usage
-./configure.sh [**-igw**]  [**-nocmk** all | managed | storage]  [**-w** \<workspace name\>]  [**--front_end_access** private|public]  [**--front_end_pl_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]  [**--front_end_pl_source_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]<br>
+./configure.sh [**-igw**] [**-nopl**]  [**-nocmk** all | managed | storage]  [**-w** \<workspace name\>]  [**--front_end_access** private|public]  [**--front_end_pl_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]  [**--front_end_pl_source_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]<br>
 | Argument              | Description    |
 | ---                   | ---            |
 |**-igw**                  |- optional, if specified will still deploy with PL but also with NAT and IGW. Default is to deploy without NAT and IGW.<br> |
+|**-nopl**                 |- optional, PrivateLink Workspace is created by default, if you don't want a PrivateLink Workspace specify this argument<br> |
 |**-w** \<workspace name\> |- optional, deployment artefacts will have specified \<workspace name\> prefix and the Workspace will be named \<workspace name\>. If not specified <workspace name> will default to **terratest-\<random string\>**<br> |
 |**&#8209;nocmk**&#160;all&#160;\|&#160;managed&#160;\|&#160;storage |- optional, Customer Managed Keys are created and configured for both managed services and root S3 bucket storage. This can be turned off. If you specify all, no CMK keys will be configured at all and default encryption in Control Plane will be used. If you specify managed, no managed services CMK encryption will be provisioned and default Control Plane encryption will be used instead. If you specify storage, no storage root S3 bucket CMK enncryption will be provisioned and default Control Plane encryption will be used instead |
   |**&#8209;&#8209;front_end_pl_subnet_ids**&#160;<subnet_id1>,<subnet_id2> |- optional, Specify AWS Subnet ids, 1 or more, where Front End Databricks Workspace VPC Endpoint will be provisioned. If the subnets are the same as the Workspace subnets omit this argument|
