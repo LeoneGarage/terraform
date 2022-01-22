@@ -15,7 +15,7 @@ resource "aws_security_group" "pl" {
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    cidr_blocks      = local.cidr_blocks
+    cidr_blocks      = concat(local.cidr_blocks, local.front_source_subnet_cidrs)
   }
   ingress {
     description      = "Relay Traffic"
@@ -30,7 +30,7 @@ resource "aws_security_group" "pl" {
     from_port        = 443
     to_port          = 443
     protocol         = "tcp"
-    cidr_blocks      = local.cidr_blocks
+    cidr_blocks      = concat(local.cidr_blocks, local.front_source_subnet_cidrs)
   }
   egress {
     description      = "Relay Traffic"

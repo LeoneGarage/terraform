@@ -6,6 +6,7 @@ locals {
     front_end_pl_subnets = local.subnets[length(data.aws_subnet.front_end_pl_subnets) > 0 ? "existing" : "created"]
     create_front_end_pl = length(local.subnets["existing"]) > 0 ? 1 : 0
     front_end_vpc_id = local.create_front_end_pl > 0 ? local.front_end_pl_subnets[split(",", var.front_end_pl_subnet_ids)[0]].vpc_id : ""
+    front_source_subnet_cidrs = local.create_front_end_pl < 1 &&  length(data.aws_subnet.front_end_pl_source_subnets) > 0 ? [for s in data.aws_subnet.front_end_pl_source_subnets: s.cidr_block] : []
 }
 
 resource "aws_security_group" "front_end_pl" {
