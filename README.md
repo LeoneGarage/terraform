@@ -60,7 +60,7 @@ Let's assume you want to deploy a workspace called 'my_workspace' and you don't 
 
 You may also run *provision* script independendently from *workspace* script.
 There is *provision.sh* script which is also called from *configure.sh* script that you can run which will only provision the Workspace. The arguments to *provision.sh* script are the same as *configure.sh* script described above.
-Subsequently, *workspace.sh* script can be run separately to configure the created Databrticks Workspace. *workspace.sh* script does not take any arguments, but needs access to terraform state that was created as part of runing *provision.sh*.
+Subsequently, *workspace.sh* script can be run separately to configure the created Databrticks Workspace. *workspace.sh* script does not take any arguments, but needs access to terraform state that was created as part of running *provision.sh*. However it only needs databricks_host (Worlspace URL) and databricks_token (PAT Token to authenticate to Workspace REST API), hence these can also be specified directly in *workspace/main.tf* template.
 
 ### Steps to tear down deployment
 To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
