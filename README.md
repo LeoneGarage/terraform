@@ -29,7 +29,7 @@ The whole thing is executed by running ./configure.sh script from root directory
 1. Install Terraform. For Mac, this is described in https://learn.hashicorp.com/tutorials/terraform/install-cli.
 2. Clone this repo to your machine.
 3. Make sure you've configured your AWS CLI credentials with the AWS Account you want to deploy to.
-4. In *provision* create a file called *secrets.tfvars*. This file should have the following variables:
+4. In *provision* subdirectory create a file called *secrets.tfvars*. This file should have the following variables:
 > databricks_account_id       = "\<databricks account id>"<br>
 > databricks_account_username = "\<databricks account owner username>"<br>
 > databricks_account_password = "\<databricks account owner password>"<br>
