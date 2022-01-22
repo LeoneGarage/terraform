@@ -7,6 +7,7 @@ USERNAME=
 PASSWORD=
 VARFILE=
 WORKSPACE_NAME=
+REGION=
 # Internet Gateway on or off
 IGW=
 # No Customer Managed Keys
@@ -42,6 +43,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -vf|--var-file)
       VARFILE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -r|--region)
+      REGION="$2"
       shift # past argument
       shift # past value
       ;;
@@ -113,6 +119,9 @@ TFAPPLY+=( -var="databricks_account_username=$PASSWORD")
 fi
 if [ -n "$WORKSPACE_NAME" ]; then
 TFAPPLY+=( -var="databricks_workspace_name=$WORKSPACE_NAME")
+fi
+if [ -n "$REGION" ]; then
+TFAPPLY+=( -var="region=$REGION")
 fi
 if [ -n "$IGW" ] && [ "$IGW" = "true" ]; then
 TFAPPLY+=( -var="allow_outgoing_internet=true")

@@ -7,5 +7,9 @@ variable "aws_secret_key" {
 }
 
 variable "region" {
-  default = "ap-southeast-2"
+  default = ""
+}
+
+locals {
+  region = length(var.region) > 0 ? var.region : data.terraform_remote_state.db.outputs.databricks_workspace_region
 }
