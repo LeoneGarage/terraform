@@ -13,10 +13,9 @@ Running the templates will do the following:
 * Create a Test cluster with access to Glue Catalog and a Test Notebook to test the setup
 
 Note, by default, the templates provision Back End Data Plane to Control Plane VPC Endpoints and allow public access for the Workspace UI.
-If you wish to also configure Front End VPC Endpoint there is a template in *provision* subdirectory called *front-end-privatelink.tf*.
-You will need to customize it and change the *count* argument of the 2 resources there, from 0 to 1.
-You may also want to change *databricks_mws_private_access_settings* resource's *public_access_enabled* argument to false in *provision/privatelink.tf* template to disallow public access except via PrivateLink and customise *private_access_level* argument.
-Beware, if you do turn off public access, Workspace configuration template in *workspace* subdirectory would then need to be run from a VPN or VM that can reach the Workspace, since with public access off the Workspace APIs will be unreachable except where netwrok routing to Front End VPC Endpoint is possible.
+If you wish to also configure Front End VPC Endpoint you can pass *--front_end_pl_subnet_ids* and *--front_end_pl_source_subnet_ids* arguments to *configure.sh* script. Each of these arguments takes a comma separated list of AWS Subnet ids for existing subnets. If you are reusing the same VPC as Data Plane Workspace VPC for Front End VPC Endpoint don't pass *--front_end_pl_subnet_ids*, it will use the one it will create for Back End Workspace VPC. More details in Usage section below.
+You may also want to disable public access to the Workspace. You can do this by passing *--front_end_access private* argument to *configure.sh* script.
+Beware, if you do turn off public access, Workspace configuration template in *workspace* subdirectory would then need to be run from a VPN or VM that can reach the Workspace, since with public access off the Workspace APIs will be unreachable except where network routing to Front End VPC Endpoint is possible.
 In that scenario you may choose to run *provision.sh* script to only provision Databricks Workspace and run *workspace.sh* separately. These are described below.
 
 #### Content
@@ -43,12 +42,15 @@ Be careful with password as secrets in Terraform are stored in plain text. This 
 6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook, created by the templates. You can run Test Notebook on Test cluster to verify that everything is working as it should.
 
 ### Usage
-**./configure.sh [-igw] [-nocmk all | managed | storage] [-w \<workspace name\>]**<br>
+./configure.sh [**-igw**]  [**-nocmk** all | managed | storage]  [**-w** \<workspace name\>]  [**--front_end_access** private|public]  [**--front_end_pl_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]  [**--front_end_pl_source_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]<br>
 | Argument              | Description    |
 | ---                   | ---            |
-|-igw                  |- optional, if specified will still deploy with PL but also with NAT and IGW. Default is to deploy without NAT and IGW.<br> |
-|-w \<workspace name\> |- optional, deployment artefacts will have specified \<workspace name\> prefix and the Workspace will be named \<workspace name\>. If not specified <workspace name> will default to **terratest-\<random string\>**<br> |
-|&#8209;nocmk&#160;all&#160;\|&#160;managed&#160;\|&#160;storage |- optional, Customer Managed Keys are created and configured for both managed services and root S3 bucket storage. This can be turned off. If you specify all, no CMK keys will be configured at all and default encryption in Control Plane will be used. If you specify managed, no managed services CMK encryption will be provisioned and default Control Plane encryption will be used instead. If you specify storage, no storage root S3 bucket CMK enncryption will be provisioned and default Control Plane encryption will be used instead |
+|**-igw**                  |- optional, if specified will still deploy with PL but also with NAT and IGW. Default is to deploy without NAT and IGW.<br> |
+|**-w** \<workspace name\> |- optional, deployment artefacts will have specified \<workspace name\> prefix and the Workspace will be named \<workspace name\>. If not specified <workspace name> will default to **terratest-\<random string\>**<br> |
+|**&#8209;nocmk**&#160;all&#160;\|&#160;managed&#160;\|&#160;storage |- optional, Customer Managed Keys are created and configured for both managed services and root S3 bucket storage. This can be turned off. If you specify all, no CMK keys will be configured at all and default encryption in Control Plane will be used. If you specify managed, no managed services CMK encryption will be provisioned and default Control Plane encryption will be used instead. If you specify storage, no storage root S3 bucket CMK enncryption will be provisioned and default Control Plane encryption will be used instead |
+|<nobr>**--front_end_pl_subnet_ids** <subnet_id1>,<subnet_id2></nobr> |- optional, Specify AWS Subnet ids, 1 or more, where Front End Databricks Workspace VPC Endpoint will be provisioned. If the subnets are the same as the Workspace subnets omit this argument|
+|<nobr>**--front_end_pl_source_subnet_ids** <subnet_id1>,<subnet_id2></nobr> |- optional, Specify AWS Subnet ids, 1 or more, which will route Databricks Front End Workspace traffic to the Front End VPC Endpoint. This could be your Direct Connect Transit VPC Subnet. If this is the same as the subnets used for --front_end_pl_subnet_ids above, omit this argument. Note if these subnets are inn a different VPC to where you deploying Front End VPC Endpoint i.e. subnets in --front_end_pl_subnet_ids argument above, the traffic must be routable from this VPC to the Front End VPC |
+|**--front_end_access** private\|public | - optional, Specify whether you still wish to allow public Internet access to your Workspace URL or not. If you deny public access and you are running these templates from a VM that is not routable to Front End VPC Endpoint subnets specified in --front_end_pl_subnet_ids, the *workspace* templates will not be able to access the Workspace APIs |
 
 You may also run *provision* script independendently from *workspace* script.
 There is *provision.sh* script which is also called from *configure.sh* script that you can run which will only provision the Workspace. The arguments to *provision.sh* script are the same as *configure.sh* script described above.

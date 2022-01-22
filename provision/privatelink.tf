@@ -148,6 +148,11 @@ resource "databricks_mws_private_access_settings" "pas" {
   account_id                   = var.databricks_account_id
   private_access_settings_name = "Private Access Settings for ${local.prefix}"
   region                       = var.region
-  public_access_enabled        = true
-  private_access_level         = "ANY"
+  public_access_enabled        = var.front_end_access == "private" ? false : true
+  private_access_level         = (var.front_end_access == "private" && length(databricks_mws_vpc_endpoint.front_end_workspace) > 0) ? "ENDPOINT" : "ACCOUNT"
+  allowed_vpc_endpoint_ids     = (var.front_end_access == "private" && length(databricks_mws_vpc_endpoint.front_end_workspace) > 0) ? concat([
+    for v in databricks_mws_vpc_endpoint.front_end_workspace: v.vpc_endpoint_id
+  ],
+    [databricks_mws_vpc_endpoint.workspace.vpc_endpoint_id, databricks_mws_vpc_endpoint.relay.vpc_endpoint_id]
+  ) : []
 }

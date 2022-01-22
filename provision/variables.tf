@@ -58,6 +58,21 @@ variable "cmk_storage" {
   default = true
 }
 
+variable "front_end_pl_subnet_ids" {
+  default = ""
+}
+
+variable "front_end_pl_source_subnet_ids" {
+  default = ""
+}
+
+# Whether o make access to Workspace public or private.
+# If private only access via specified Front End VPC Endpoint will be allowed.
+# valid value are "", "private", "public"
+variable "front_end_access" {
+  default = ""
+}
+
 
 resource "random_string" "naming" {
   special = false
