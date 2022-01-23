@@ -1,4 +1,45 @@
 data "aws_availability_zones" "available" {}
+data "aws_caller_identity" "current" {}
+
+locals {
+    policy_json_sts = {
+    "Statement": [
+        {
+            "Action": [
+                "sts:AssumeRole",
+                "sts:AssumeRoleWithSAML",
+                "sts:AssumeRoleWithWebIdentity",
+                "sts:DecodeAuthorizationMessage",
+                "sts:GetAccessKeyInfo",
+                "sts:GetCallerIdentity",
+                "sts:GetFederationToken",
+                "sts:GetServiceBearerToken",
+                "sts:GetSessionToken",
+                "sts:TagSession"
+            ],
+            "Effect": "Allow",
+            "Resource": "*",
+            "Principal": {
+                "AWS": "414351767826"
+            }
+        },
+        {
+            "Action": [
+                "sts:AssumeRole",
+                "sts:GetAccessKeyInfo",
+                "sts:GetSessionToken",
+                "sts:DecodeAuthorizationMessage",
+                "sts:TagSession"
+            ],
+            "Effect": "Allow",
+            "Resource": "*",
+            "Principal": {
+                "AWS": "${data.aws_caller_identity.current.account_id}"
+            }
+        }
+    ]
+  }
+}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -80,6 +121,7 @@ module "vpc_endpoints" {
       service             = "sts"
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
+      policy              = jsonencode(local.policy_json_sts)
       tags = merge({
         Name = "${local.prefix}-sts-vpc-endpoint"
       },
