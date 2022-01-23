@@ -2,6 +2,9 @@
 
 set -e
 
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+WORKSPACE_NAME=
 PLAN=
 
 POSITIONAL=()
@@ -13,6 +16,11 @@ while [[ $# -gt 0 ]]; do
       PLAN=true
       shift # past argument
       ;;
+    -w|--workspace)
+      WORKSPACE_NAME="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -22,11 +30,15 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-pushd workspace
-terraform init
+$DIR/configure_tf_workspace.sh $WORKSPACE_NAME
+
+terraform -chdir=$DIR/workspace init
+set +e
+terraform -chdir=$DIR/workspace workspace new $WORKSPACE_NAME
+set -e
+terraform -chdir=$DIR/workspace workspace select $WORKSPACE_NAME
 if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
-terraform plan
+terraform -chdir=$DIR/workspace plan -var="workspace=$WORKSPACE_NAME"
 else
-terraform apply -auto-approve
+terraform -chdir=$DIR/workspace apply -auto-approve -var="workspace=$WORKSPACE_NAME"
 fi
-popd

@@ -2,7 +2,10 @@
 
 set -e
 
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 PLAN=
+WORKSPACE_NAME=
 
 SAVED=("$@")
 POSITIONAL=()
@@ -14,6 +17,11 @@ while [[ $# -gt 0 ]]; do
       PLAN=true
       shift # past argument
       ;;
+    -w|--workspace)
+      WORKSPACE_NAME="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -23,10 +31,8 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-./provision.sh -vf secrets.tfvars "${SAVED[@]}"
+$DIR/configure_tf_workspace.sh $WORKSPACE_NAME
 
-if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
-./workspace.sh -plan
-else
-./workspace.sh
-fi
+$DIR/provision.sh -vf secrets.tfvars "${SAVED[@]}"
+
+$DIR/workspace.sh "${SAVED[@]}"

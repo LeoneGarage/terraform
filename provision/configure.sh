@@ -2,6 +2,8 @@
 
 set -e
 
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 ACCOUNT_ID=
 USERNAME=
 PASSWORD=
@@ -63,7 +65,9 @@ while [[ $# -gt 0 ]]; do
     -nocmk|--no_customer_managed_keys)
       NOCMK="$2"
       shift # past argument
+      if [ -n "$NOCMK" ]; then
       shift # past value
+      fi
       ;;
     -plan|--plan)
       PLAN=true
@@ -100,10 +104,32 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
+if [ -n "$VARFILE" ]; then
+VARFILE="$(cd "$(dirname "$VARFILE")"; pwd)/$(basename "$VARFILE")"
+fi
+
+CURR_W=$(terraform -chdir=$DIR/.. workspace show)
+if [ -z "$WORKSPACE_NAME" ]; then
+  if [ "$CURR_W" != "default" ]; then
+    WORKSPACE_NAME=$CURR_W
+  fi
+fi
+if [ -z "$WORKSPACE_NAME" ]; then
+RANDSTR=$(openssl rand -base64 12 | cut -c1-6 | sed 's/[^a-zA-Z0-9]//g')
+WORKSPACE_NAME="terratest-$RANDSTR"
+fi
+
+if [ "$WORKSPACE_NAME" != "$CURR_W" ]; then
+set +e
+terraform -chdir=$DIR workspace new $WORKSPACE_NAME
+set -e
+terraform -chdir=$DIR workspace select $WORKSPACE_NAME
+fi
+
 if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
-TFAPPLY=(terraform plan)
+TFAPPLY=(terraform -chdir=$DIR plan)
 else
-TFAPPLY=(terraform apply -auto-approve) # terraform apply initial command
+TFAPPLY=(terraform -chdir=$DIR apply -auto-approve) # terraform apply initial command
 fi
 if [ -n "$VARFILE" ]; then
 TFAPPLY+=( -var-file=$VARFILE)
@@ -138,7 +164,11 @@ if [ -n "$NOPL" ] && [ "$NOPL" = "true" ]; then
 TFAPPLY+=( -var="private_link=false")
 fi
 
-terraform init
+terraform -chdir=$DIR init
+set +e
+terraform -chdir=$DIR workspace new $WORKSPACE_NAME
+set -e
+terraform -chdir=$DIR workspace select $WORKSPACE_NAME
 
 if [ -n "$FRONT_END_PL_SUBNET_IDS" ]; then
 TFAPPLY+=( -var="front_end_pl_subnet_ids=$FRONT_END_PL_SUBNET_IDS")
