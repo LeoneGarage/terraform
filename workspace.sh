@@ -6,6 +6,7 @@ DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 WORKSPACE_NAME=
 PLAN=
+IMPORT=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -14,6 +15,10 @@ while [[ $# -gt 0 ]]; do
   case $key in
     -plan)
       PLAN=true
+      shift # past argument
+      ;;
+    -import)
+      IMPORT=true
       shift # past argument
       ;;
     -w|--workspace)
@@ -38,7 +43,11 @@ terraform -chdir=$DIR/workspace workspace new $WORKSPACE_NAME
 set -e
 terraform -chdir=$DIR/workspace workspace select $WORKSPACE_NAME
 if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
-terraform -chdir=$DIR/workspace plan -var="workspace=$WORKSPACE_NAME"
+  terraform -chdir=$DIR/workspace plan -var="workspace=$WORKSPACE_NAME"
 else
-terraform -chdir=$DIR/workspace apply -auto-approve -var="workspace=$WORKSPACE_NAME"
+  if [ -n "$IMPORT" ] && [ "$IMPORT" = "true" ]; then
+    terraform -chdir=$DIR/workspace import -var="workspace=$WORKSPACE_NAME"
+  else
+    terraform -chdir=$DIR/workspace apply -auto-approve -var="workspace=$WORKSPACE_NAME"
+  fi
 fi

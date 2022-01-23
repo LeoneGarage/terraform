@@ -4,7 +4,6 @@ set -e
 
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-PLAN=
 WORKSPACE_NAME=
 
 SAVED=("$@")
@@ -13,10 +12,6 @@ while [[ $# -gt 0 ]]; do
   key="$1"
 
   case $key in
-    -plan)
-      PLAN=true
-      shift # past argument
-      ;;
     -w|--workspace)
       WORKSPACE_NAME="$2"
       shift # past argument

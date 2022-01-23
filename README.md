@@ -55,13 +55,22 @@ Be careful with password as secrets in Terraform are stored in plain text. This 
 |**--front_end_access** private\|public | - optional, Specify whether you still wish to allow public Internet access to your Workspace URL or not. If you deny public access and you are running these templates from a VM that is not routable to Front End VPC Endpoint subnets specified in --front_end_pl_subnet_ids, the *workspace* templates will not be able to access the Workspace APIs |
 
 #### Example
-Let's assume you want to deploy a workspace called 'my_workspace' and you don't want to provision Customer Managed Keys for encryption of Managed Services objects and Root S3 Storage, and you want to deploy Front End Workspace VPC Endpoint into a VPC Subnet separate from the Workspace VPC which will be created by the template, let's assume the AWS Subnet Id in this VPC Endpoint is 'subnet-0c00ac0320cba6d93' and you want to route traffic to this subnet from another subnet in a different VPC, let's assume that subnets AWS Subnet Id is 'subnet-ad00ac0320cba6e00'. The the command line to configure the Workspace would be:
+Let's assume you want to deploy a workspace called 'my-workspace' and you don't want to provision Customer Managed Keys for encryption of Managed Services objects and Root S3 Storage, and you want to deploy Front End Workspace VPC Endpoint into a VPC Subnet separate from the Workspace VPC which will be created by the template, let's assume the AWS Subnet Id in this VPC Endpoint is 'subnet-0c00ac0320cba6d93' and you want to route traffic to this subnet from another subnet in a different VPC, let's assume that subnets AWS Subnet Id is 'subnet-ad00ac0320cba6e00'. The the command line to configure the Workspace would be:
 
-**./configure.sh**&#160;**&#8209;w**&#160;*my_workspace*&#160;**&#8209;nocmk**&#160;*all*&#160;**&#8209;&#8209;front_end_pl_subnet_ids**&#160;*subnet&#8209;0c00ac0320cba6d93*&nbsp;**&#8209;&#8209;front_end_pl_source_subnet_ids**&#160;*subnet&#8209;ad00ac0320cba6e00*
+**./configure.sh**&#160;**&#8209;w**&#160;*my-workspace*&#160;**&#8209;nocmk**&#160;*all*&#160;**&#8209;&#8209;front_end_pl_subnet_ids**&#160;*subnet&#8209;0c00ac0320cba6d93*&nbsp;**&#8209;&#8209;front_end_pl_source_subnet_ids**&#160;*subnet&#8209;ad00ac0320cba6e00*
 
 You may also run *provision* script independendently from *workspace* script.
 There is *provision.sh* script which is also called from *configure.sh* script that you can run which will only provision the Workspace. The arguments to *provision.sh* script are the same as *configure.sh* script described above.
 Subsequently, *workspace.sh* script can be run separately to configure the created Databrticks Workspace. *workspace.sh* script only takes an optional **-w** *\<workspace name\>* argument to execute for workspace which has already been created. If no arguments are passed it will execute for active workspace i.e. terraform workspace that is currently active or workspace for which *configure.sh* or *provisionn.sh* was last executed. *workspace.sh* will access terraform state that was created as part of running *provision.sh* for a specified terraform workspace. However it only needs databricks_host (Worlspace URL) and databricks_token (PAT Token to authenticate to Workspace REST API), hence these can also be specified directly in *workspace/main.tf* template.
+
+### Importing existing resources
+If there are some AWS resources you don't with to have created by the template, but instead would like to reuse when creating AWS infrastructure for the Workspace, you can run *provision.sh* script with **-import** argument.
+Import accepts the name of the AWS resource as specified in terraform templates and the AWS Id of the resources.
+For example, if you want to import already created S3 bucket as root bucket called **rootbucket-my-workspace** for your workspace called **workspace** you can run:
+
+**./provision.sh**&#160;**&#8209;w**&#160;*my-workspace*&#160;**&#8209;import**&#160;*aws_s3_bucket.root_storage_bucket*&#160;*rootbucket-my-workspace*
+
+Running **./configure.sh** script for *my-worspace* workspace after this will not create the bucket and will use the imported bucket instead for root S3 bucket.
 
 ### Steps to tear down deployment
 To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
