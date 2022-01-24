@@ -56,6 +56,9 @@ terraform -chdir=$DIR/provision destroy -auto-approve -var-file $VARFILE
 terraform -chdir=$DIR/provision workspace select default
 if [ -n "$WORKSPACE_NAME" ]; then
 terraform -chdir=$DIR/provision workspace delete $WORKSPACE_NAME
+PRIVATELINK_DNS_STATE_FILE=$WORKSPACE_NAME-private-dns.tfvars
+PRIVATELINK_DNS_STATE_FILE="$(cd "$(dirname "$PRIVATELINK_DNS_STATE_FILE")"; pwd)/$(basename "$PRIVATELINK_DNS_STATE_FILE")"
+rm -f "$PRIVATELINK_DNS_STATE_FILE"
 fi
 
 if [ -n "$WORKSPACE_NAME" ]; then

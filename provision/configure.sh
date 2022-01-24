@@ -127,6 +127,12 @@ if [ -z "$WORKSPACE_NAME" ]; then
   WORKSPACE_NAME="terratest-$RANDSTR"
 fi
 
+PRIVATELINK_DNS_STATE_FILE=$WORKSPACE_NAME-private-dns.tfvars
+PRIVATELINK_DNS_STATE_FILE="$(cd "$(dirname "$PRIVATELINK_DNS_STATE_FILE")"; pwd)/$(basename "$PRIVATELINK_DNS_STATE_FILE")"
+if [ ! -f "$PRIVATELINK_DNS_STATE_FILE" ]; then
+  echo "private_dns_enabled=false" > "$PRIVATELINK_DNS_STATE_FILE"
+fi
+
 if [ "$WORKSPACE_NAME" != "$CURR_W" ]; then
   set +e
   terraform -chdir=$DIR workspace new $WORKSPACE_NAME
@@ -134,6 +140,7 @@ if [ "$WORKSPACE_NAME" != "$CURR_W" ]; then
   terraform -chdir=$DIR workspace select $WORKSPACE_NAME
 fi
 
+TFAPPLY_ARGS=()
 if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
   TFAPPLY=(terraform -chdir=$DIR plan)
 else
@@ -144,36 +151,40 @@ else
   fi
 fi
 if [ -n "$VARFILE" ]; then
-  TFAPPLY+=( -var-file=$VARFILE)
+  TFAPPLY_ARGS+=( -var-file=$VARFILE)
+fi
+if [ -n "$PRIVATELINK_DNS_STATE_FILE" ]; then
+  TFAPPLY_ARGS+=( -var-file="$PRIVATELINK_DNS_STATE_FILE")
 fi
 if [ -n "$ACCOUNT_ID" ]; then
-  TFAPPLY+=( -var="databricks_account_id=$ACCOUNT_ID")
+  TFAPPLY_ARGS+=( -var="databricks_account_id=$ACCOUNT_ID")
 fi
 if [ -n "$USERNAME" ]; then
-  TFAPPLY+=( -var="databricks_account_username=$USERNAME")
+  TFAPPLY_ARGS+=( -var="databricks_account_username=$USERNAME")
 fi
 if [ -n "$PASSWORD" ]; then
-  TFAPPLY+=( -var="databricks_account_username=$PASSWORD")
+  TFAPPLY_ARGS+=( -var="databricks_account_username=$PASSWORD")
 fi
 if [ -n "$WORKSPACE_NAME" ]; then
-  TFAPPLY+=( -var="databricks_workspace_name=$WORKSPACE_NAME")
+  TFAPPLY_ARGS+=( -var="databricks_workspace_name=$WORKSPACE_NAME")
 fi
 if [ -n "$REGION" ]; then
-  TFAPPLY+=( -var="region=$REGION")
+  TFAPPLY_ARGS+=( -var="region=$REGION")
 fi
 if [ -n "$IGW" ] && [ "$IGW" = "true" ]; then
-  TFAPPLY+=( -var="allow_outgoing_internet=true")
+  TFAPPLY_ARGS+=( -var="allow_outgoing_internet=true")
 fi
 if [ -n "$NOCMK" ]; then
 if [ "$NOCMK" = "all" ]; then
-  TFAPPLY+=( -var="cmk_managed=false")
-  TFAPPLY+=( -var="cmk_storage=false")
+  TFAPPLY_ARGS+=( -var="cmk_managed=false")
+  TFAPPLY_ARGS+=( -var="cmk_storage=false")
 else
-  TFAPPLY+=( -var="cmk_$NOCMK=false")
+  TFAPPLY_ARGS+=( -var="cmk_$NOCMK=false")
 fi
 fi
 if [ -n "$NOPL" ] && [ "$NOPL" = "true" ]; then
-  TFAPPLY+=( -var="private_link=false")
+  TFAPPLY_ARGS+=( -var="private_link=false")
+  echo "private_dns_enabled=false" > "$PRIVATELINK_DNS_STATE_FILE"
 fi
 
 terraform -chdir=$DIR init
@@ -183,26 +194,28 @@ set -e
 terraform -chdir=$DIR workspace select $WORKSPACE_NAME
 
 if [ -n "$FRONT_END_PL_SUBNET_IDS" ]; then
-  TFAPPLY+=( -var="front_end_pl_subnet_ids=$FRONT_END_PL_SUBNET_IDS")
+  TFAPPLY_ARGS+=( -var="front_end_pl_subnet_ids=$FRONT_END_PL_SUBNET_IDS")
 fi
 
 if [ -n "$FROND_END_PL_SOURCE_SUBNET_IDS" ]; then
-  TFAPPLY+=( -var="front_end_pl_source_subnet_ids=$FROND_END_PL_SOURCE_SUBNET_IDS")
+  TFAPPLY_ARGS+=( -var="front_end_pl_source_subnet_ids=$FROND_END_PL_SOURCE_SUBNET_IDS")
 fi
 
 if [ -n "$IMPORT_ADDR" ] ; then
-  TFAPPLY+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
+  TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
 fi
+
 # Apply terraform template to provision AWS and Databricks infra for a Workspace
 # If $FRONT_END_PL_SUBNET_IDS is provided will also create Front End VPC Endpoint in those subnets
-"${TFAPPLY[@]}"
+"${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}"
 
 if [ -z "$IMPORT_ADDR" ] ; then
 # Now if required we will adjust private access after the Workspace is created so we don't have to access it's URL since this may render it inaccessible
   if [ -n "$FRONT_END_ACCESS" ]; then
-    TFAPPLY+=( -var="front_end_access=$FRONT_END_ACCESS")
+    TFAPPLY_ARGS+=( -var="front_end_access=$FRONT_END_ACCESS")
   fi
 
   # Need to setup Databricks VPC Endpoint DNS resolution which can only be done after the VPC Endpoint has been accepted after configuration
-  "${TFAPPLY[@]}" -var="private_dns_enabled=true"
+  "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}" -var="private_dns_enabled=true"
+  echo "private_dns_enabled=true" > "$PRIVATELINK_DNS_STATE_FILE"
 fi
