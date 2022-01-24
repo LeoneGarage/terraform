@@ -3,6 +3,8 @@
 set -e
 
 WORKSPACE_NAME=
+ACCOUNT_LEVEL=
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -12,6 +14,10 @@ while [[ $# -gt 0 ]]; do
       WORKSPACE_NAME="$2"
       shift # past argument
       shift # past value
+      ;;
+    -al|--account-level)
+      ACCOUNT_LEVEL="true"
+      shift # past argument
       ;;
     *)    # unknown option
       echo "Unknown option $1"
@@ -74,6 +80,15 @@ PRIVATELINK_DNS_STATE_FILE=$WORKSPACE_NAME-private-dns.tfvars
 PRIVATELINK_DNS_STATE_FILE="$(cd "$(dirname "$PRIVATELINK_DNS_STATE_FILE")"; pwd)/$(basename "$PRIVATELINK_DNS_STATE_FILE")"
 rm -f "$PRIVATELINK_DNS_STATE_FILE"
 fi
+
+if [ -n "$ACCOUNT_LEVEL" ] && [ "$ACCOUNT_LEVEL" = "true" ]; then
+  terraform -chdir=$DIR/provision/log-delivery init
+  terraform -chdir=$DIR/provision/log-delivery workspace select $ACCOUNT_NAME
+  terraform -chdir=$DIR/provision/log-delivery destroy -auto-approve -var-file $VARFILE
+  terraform -chdir=$DIR/provision/log-delivery workspace select default
+  terraform -chdir=$DIR/provision/log-delivery workspace delete $ACCOUNT_NAME
+fi
+
 
 if [ -n "$WORKSPACE_NAME" ]; then
 terraform -chdir=$DIR workspace select default
