@@ -66,7 +66,7 @@ There is *provision.sh* script which is also called from *configure.sh* script t
 Subsequently, *workspace.sh* script can be run separately to configure the created Databrticks Workspace. *workspace.sh* script only takes an optional **-w** *\<workspace name\>* argument to execute for workspace which has already been created. If no arguments are passed it will execute for active workspace i.e. terraform workspace that is currently active or workspace for which *configure.sh* or *provisionn.sh* was last executed. *workspace.sh* will access terraform state that was created as part of running *provision.sh* for a specified terraform workspace. However it only needs databricks_host (Worlspace URL) and databricks_token (PAT Token to authenticate to Workspace REST API), hence these can also be specified directly in *workspace/main.tf* template.
 
 ### Importing existing resources
-If there are some AWS resources you don't with to have created by the template, but instead would like to reuse when creating AWS infrastructure for the Workspace, you can run *provision.sh* script with **-import** argument.
+If there are some AWS resources, created outside of Terraform, you don't wish to be created by the template, but instead would like to reuse when creating AWS infrastructure for the Workspace, you can run *provision.sh* script with **-import** argument.
 Import accepts the name of the AWS resource as specified in terraform templates and the AWS Id of the resources.
 For example, if you want to import already created S3 bucket as root bucket called **rootbucket-my-workspace** for your workspace called **workspace** you can run:
 
