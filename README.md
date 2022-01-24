@@ -8,6 +8,7 @@ Running the templates will do the following:
   - By default VPC CIDR is 10.0.0.0/16 and subnets 10.0.0.0/19. This gives you over 8000 IP addresses per subnet/AZ, so over 4000 cluster nodes. If you want to adjust these ranges you can modify *cidr_block_prefix* and *subnet_offset* variables in *provision/variables.tf* file before running the template. Keep in mind that subnet netmask must be between /17 and /26 and you need to fit at least 2 Workspace subnets in different AZs. In addition, you need smaller subnets for PL and NAT, if choosing that option. This means *subnet_offset* should not be less than 2 (so 2 bits to allow space for 2 Workspace subnets and space for additional small subnets). You only need to specify *cidr_block_prefix* and *subnet_offset* variables, the template works out cidr for small subnets out of available space.
 * Provision Databricks PL for REST API and Relay integration and S3, STS, Kinesis, Glue PL for AWS
 * By default the templates will create and configure Customer Managed Keys for encryption of managed services (i.e. Notebooks, Metastore in Control Plane etc) and root S3 bucket storage. These can be individually turned off using script arguments described in Usage section below.
+* Provision Usage and Audit Log Delivery bucket and related AWS resources
 * Provision E2 Databricks Workspace objects through Account API
 * Provision initial IAM Role with access to Glue Catalog
 * Create a Test cluster with access to Glue Catalog and a Test Notebook to test the setup
@@ -31,10 +32,11 @@ The whole thing is executed by running ./configure.sh script from root directory
 3. Make sure you've configured your AWS CLI credentials with the AWS Account you want to deploy to.
 4. Create a file called *secrets.tfvars* in directory you will be calling the *configure.sh* from. This file should have the following variables:
 > databricks_account_id       = "\<databricks account id>"<br>
+> databricks_account_name     = "\<databricks account name>"<br>
 > databricks_account_username = "\<databricks account owner username>"<br>
 > databricks_account_password = "\<databricks account owner password>"<br>
 
-These are your Databricks Account Id that you can get from Databricks Account Console, Your Databricks Account Owner User Name and Databricks Account Owner Password. If you don't have Databricks Account Id you can sign up for a 14 free trial in https://databricks.com/try-databricks to get it.
+These are your Databricks Account Id that you can get from Databricks Account Console, Your Databricks Account Name which will be used to prefix the name of Log Delivery S3 bucket and related AWS resources since these are account wide resources, Your Databricks Account Owner User Name and Databricks Account Owner Password. If you don't have Databricks Account Id you can sign up for a 14 free trial in https://databricks.com/try-databricks to get it.
 Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
 
 4. Once you created *secrets.tfvars* file in *provision* subdirectory, back in root directory there is a script called *configure.sh*. Run this script and pass to it *-w <your workspace name>* parameter. So for example, if I want to create a Databricks Workspace called **demo**, I would run *./configure.sh -w demo* on command line.

@@ -10,6 +10,10 @@ variable "databricks_account_id" {
   sensitive = true
 }
 
+variable "databricks_account_name" {
+  type = string
+}
+
 variable "aws_access_key" {
   default = ""
 }
@@ -76,7 +80,6 @@ variable "front_end_access" {
 variable "private_link" {
   default = true
 }
-
 
 resource "random_string" "naming" {
   special = false

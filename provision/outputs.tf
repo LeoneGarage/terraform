@@ -14,3 +14,7 @@ output "databricks_workspace_name" {
 output "databricks_workspace_region" {
   value = var.region
 }
+
+output "databricks_account_name" {
+  value = var.databricks_account_name
+}
