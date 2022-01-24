@@ -205,6 +205,24 @@ if [ -n "$IMPORT_ADDR" ] ; then
   TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
 fi
 
+ACCOUNT_NAME=$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')
+if [ -n "$ACCOUNT_NAME" ]; then
+HAS_LOG1=
+HAS_LOG2=
+set +e
+  HAS_LOG1=$(terraform -chdir=$DIR state show aws_s3_bucket.logdelivery)
+set -e
+if [ -z "$HAS_LOG1" ]; then
+  terraform -chdir=$DIR import "${TFAPPLY_ARGS[@]}" aws_s3_bucket.logdelivery $ACCOUNT_NAME-logdelivery
+fi
+set +e
+  HAS_LOG2=$(terraform -chdir=$DIR state show aws_iam_role.logdelivery)
+set -e
+if [ -z "$HAS_LOG2" ]; then
+  terraform -chdir=$DIR import "${TFAPPLY_ARGS[@]}" aws_iam_role.logdelivery $ACCOUNT_NAME-logdelivery
+fi
+fi
+
 # Apply terraform template to provision AWS and Databricks infra for a Workspace
 # If $FRONT_END_PL_SUBNET_IDS is provided will also create Front End VPC Endpoint in those subnets
 "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}"
