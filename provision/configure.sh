@@ -25,6 +25,7 @@ FRONT_END_PL_SUBNET_IDS=
 FROND_END_PL_SOURCE_SUBNET_IDS=
 # PrivateLink on or off
 NOPL=
+ACCOUNT_LEVEL=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -33,6 +34,15 @@ while [[ $# -gt 0 ]]; do
   case $key in
     -a|--account_id)
       ACCOUNT_ID="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -al|--account-level)
+      ACCOUNT_LEVEL=true
+      shift # past argument
+      ;;
+    -dir|--directory)
+      DIR="$(cd "$(dirname "$2")"; pwd)/$(basename "$2")"
       shift # past argument
       shift # past value
       ;;
@@ -127,9 +137,11 @@ if [ -z "$WORKSPACE_NAME" ]; then
   WORKSPACE_NAME="terratest-$RANDSTR"
 fi
 
+ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')---account---level"
+
 PRIVATELINK_DNS_STATE_FILE=$WORKSPACE_NAME-private-dns.tfvars
 PRIVATELINK_DNS_STATE_FILE="$(cd "$(dirname "$PRIVATELINK_DNS_STATE_FILE")"; pwd)/$(basename "$PRIVATELINK_DNS_STATE_FILE")"
-if [ ! -f "$PRIVATELINK_DNS_STATE_FILE" ]; then
+if [[( -z "$ACCOUNT_LEVEL" || "$ACCOUNT_LEVEL" = "false" ) && ! -f "$PRIVATELINK_DNS_STATE_FILE" ]]; then
   echo "private_dns_enabled=false" > "$PRIVATELINK_DNS_STATE_FILE"
 fi
 
@@ -153,7 +165,7 @@ fi
 if [ -n "$VARFILE" ]; then
   TFAPPLY_ARGS+=( -var-file=$VARFILE)
 fi
-if [ -n "$PRIVATELINK_DNS_STATE_FILE" ]; then
+if [ -f "$PRIVATELINK_DNS_STATE_FILE" ]; then
   TFAPPLY_ARGS+=( -var-file="$PRIVATELINK_DNS_STATE_FILE")
 fi
 if [ -n "$ACCOUNT_ID" ]; then
@@ -205,24 +217,6 @@ if [ -n "$IMPORT_ADDR" ] ; then
   TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
 fi
 
-ACCOUNT_NAME=$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')
-if [ -n "$ACCOUNT_NAME" ]; then
-HAS_LOG1=
-HAS_LOG2=
-set +e
-  HAS_LOG1=$(terraform -chdir=$DIR state show aws_s3_bucket.logdelivery)
-set -e
-if [ -z "$HAS_LOG1" ]; then
-  terraform -chdir=$DIR import "${TFAPPLY_ARGS[@]}" aws_s3_bucket.logdelivery $ACCOUNT_NAME-logdelivery
-fi
-set +e
-  HAS_LOG2=$(terraform -chdir=$DIR state show aws_iam_role.logdelivery)
-set -e
-if [ -z "$HAS_LOG2" ]; then
-  terraform -chdir=$DIR import "${TFAPPLY_ARGS[@]}" aws_iam_role.logdelivery $ACCOUNT_NAME-logdelivery
-fi
-fi
-
 # Apply terraform template to provision AWS and Databricks infra for a Workspace
 # If $FRONT_END_PL_SUBNET_IDS is provided will also create Front End VPC Endpoint in those subnets
 "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}"
@@ -233,7 +227,9 @@ if [ -z "$IMPORT_ADDR" ] ; then
     TFAPPLY_ARGS+=( -var="front_end_access=$FRONT_END_ACCESS")
   fi
 
-  # Need to setup Databricks VPC Endpoint DNS resolution which can only be done after the VPC Endpoint has been accepted after configuration
-  "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}" -var="private_dns_enabled=true"
-  echo "private_dns_enabled=true" > "$PRIVATELINK_DNS_STATE_FILE"
+  if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" = "false" ]; then
+    # Need to setup Databricks VPC Endpoint DNS resolution which can only be done after the VPC Endpoint has been accepted after configuration
+    "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}" -var="private_dns_enabled=true"
+    echo "private_dns_enabled=true" > "$PRIVATELINK_DNS_STATE_FILE"
+  fi
 fi

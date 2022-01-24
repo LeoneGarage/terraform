@@ -5,6 +5,7 @@ set -e
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 WORKSPACE_NAME=
+REGION=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -13,6 +14,11 @@ while [[ $# -gt 0 ]]; do
   case $key in
     -w|--workspace)
       WORKSPACE_NAME="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -r|--region)
+      REGION="$2"
       shift # past argument
       shift # past value
       ;;
@@ -25,8 +31,18 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-$DIR/configure_tf_workspace.sh $WORKSPACE_NAME
+ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')---account---level"
 
+$DIR/configure_tf_workspace.sh $ACCOUNT_NAME
+CONFIGURE=($DIR/provision/configure.sh --account-level -dir "$DIR/provision/log-delivery/" -vf secrets.tfvars) # initial command
+CONFIGURE+=( -w $ACCOUNT_NAME)
+if [ -n "$REGION" ]; then
+  CONFIGURE+=( -r $REGION)
+fi
+
+"${CONFIGURE[@]}"
+
+$DIR/configure_tf_workspace.sh $WORKSPACE_NAME
 CONFIGURE=($DIR/provision/configure.sh -vf secrets.tfvars) # initial command
 CONFIGURE+=( $* )
 "${CONFIGURE[@]}"
