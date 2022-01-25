@@ -37,17 +37,19 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-$DIR/configure_tf_workspace.sh $WORKSPACE_NAME
+ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '" ')"
+
+$DIR/configure_tf_workspace.sh $ACCOUNT_NAME $WORKSPACE_NAME
 
 terraform -chdir=$DIR/workspace init
-workspace_create_if_not_exists $DIR/workspace $WORKSPACE_NAME
-terraform -chdir=$DIR/workspace workspace select $WORKSPACE_NAME
+workspace_create_if_not_exists $DIR/workspace $ACCOUNT_NAME $WORKSPACE_NAME
+workspace_select "$DIR/workspace" $ACCOUNT_NAME $WORKSPACE_NAME
 if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
-  terraform -chdir=$DIR/workspace plan -var="workspace=$WORKSPACE_NAME"
+  terraform -chdir=$DIR/workspace plan -var="workspace=$ACCOUNT_NAME-$WORKSPACE_NAME"
 else
   if [ -n "$IMPORT" ] && [ "$IMPORT" = "true" ]; then
-    terraform -chdir=$DIR/workspace import -var="workspace=$WORKSPACE_NAME"
+    terraform -chdir=$DIR/workspace import -var="workspace=$ACCOUNT_NAME-$WORKSPACE_NAME"
   else
-    terraform -chdir=$DIR/workspace apply -auto-approve -var="workspace=$WORKSPACE_NAME"
+    terraform -chdir=$DIR/workspace apply -auto-approve -var="workspace=$ACCOUNT_NAME-$WORKSPACE_NAME"
   fi
 fi

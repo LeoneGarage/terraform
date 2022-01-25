@@ -51,10 +51,10 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')---account---level"
+ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '" ')"
 
 if [[ -z "$IMPORT_ADDR" || ( -n "$ACCOUNT_LEVEL" && "$ACCOUNT_LEVEL" = "true" )]]; then
-  $DIR/configure_tf_workspace.sh $ACCOUNT_NAME
+  $DIR/configure_tf_workspace.sh $ACCOUNT_NAME "."
   CONFIGURE=($DIR/provision/configure.sh --account-level -dir "$DIR/provision/log-delivery/" -vf secrets.tfvars) # initial command
   CONFIGURE+=( -w $ACCOUNT_NAME)
   if [ -n "$REGION" ]; then
@@ -71,7 +71,7 @@ if [[ -z "$IMPORT_ADDR" || ( -n "$ACCOUNT_LEVEL" && "$ACCOUNT_LEVEL" = "true" )]
 fi
 
 if [[ -z "$IMPORT_ADDR" || ( -z "$ACCOUNT_LEVEL" || "$ACCOUNT_LEVEL" != "true" ) ]]; then
-  $DIR/configure_tf_workspace.sh $WORKSPACE_NAME
+  $DIR/configure_tf_workspace.sh $ACCOUNT_NAME $WORKSPACE_NAME
   CONFIGURE=($DIR/provision/configure.sh -vf secrets.tfvars) # initial command
   CONFIGURE+=( ${SAVED} )
   "${CONFIGURE[@]}"

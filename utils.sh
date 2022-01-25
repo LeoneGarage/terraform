@@ -1,16 +1,27 @@
 #!/bin/bash
 
 workspace_exists() {
-  WORKSPACE_EXISTS_RETURN=$(terraform -chdir=$1 workspace list | grep -w $2 | tr -d '* ')
-  if [ "$WORKSPACE_EXISTS_RETURN" != "$2" ]; then
+  local ACCOUNT_NAME=$2
+  local WORKSPACE_NAME=$3
+  local TF_WORKSPACE_NAME=$ACCOUNT_NAME
+  if [ -n "$WORKSPACE_NAME" ]; then
+    local TF_WORKSPACE_NAME+="-"$WORKSPACE_NAME
+  fi
+  WORKSPACE_EXISTS_RETURN=$(terraform -chdir=$1 workspace list | grep -w "$TF_WORKSPACE_NAME$" | tr -d '* ')
+  if [ "$WORKSPACE_EXISTS_RETURN" != "$TF_WORKSPACE_NAME" ]; then
     WORKSPACE_EXISTS_RETURN=
   fi
 }
 
 workspace_create_if_not_exists() {
-  local WORKSPACE_EXISTS=$(terraform -chdir=$1 workspace list | grep -w $2 | tr -d '* ')
-  if [ "$WORKSPACE_EXISTS" != "$2" ]; then
-    terraform -chdir=$1 workspace new $2
+  if ! workspace_exists $1 $2 $3 || [ -z "$WORKSPACE_EXISTS_RETURN" ]; then
+    local ACCOUNT_NAME=$2
+    local WORKSPACE_NAME=$3
+    local TF_WORKSPACE_NAME=$ACCOUNT_NAME
+    if [ -n "$WORKSPACE_NAME" ]; then
+      local TF_WORKSPACE_NAME+="-"$WORKSPACE_NAME
+    fi
+    terraform -chdir=$1 workspace new $TF_WORKSPACE_NAME
   fi
 }
 
@@ -21,4 +32,24 @@ workspace_state_get() {
   if [ -n "$STATE_EXISTS" ]; then
     WORKSPACE_STATE_GET_RETURN=$(terraform -chdir=$1 state show $2 | grep $3 | cut -d'=' -f2 | tr -d '" ')
   fi
+}
+
+workspace_select() {
+  local ACCOUNT_NAME=$2
+  local WORKSPACE_NAME=$3
+  local TF_WORKSPACE_NAME=$ACCOUNT_NAME
+  if [ -n "$WORKSPACE_NAME" ]; then
+    local TF_WORKSPACE_NAME+="-"$WORKSPACE_NAME
+  fi
+  terraform -chdir=$1 workspace select $TF_WORKSPACE_NAME
+}
+
+workspace_delete() {
+  local ACCOUNT_NAME=$2
+  local WORKSPACE_NAME=$3
+  local TF_WORKSPACE_NAME=$ACCOUNT_NAME
+  if [ -n "$WORKSPACE_NAME" ]; then
+    local TF_WORKSPACE_NAME+="-"$WORKSPACE_NAME
+  fi
+  terraform -chdir=$1 workspace delete $TF_WORKSPACE_NAME
 }

@@ -131,7 +131,8 @@ fi
 CURR_W=$(terraform -chdir=$DIR/.. workspace show)
 if [ -z "$WORKSPACE_NAME" ]; then
   if [ "$CURR_W" != "default" ]; then
-    WORKSPACE_NAME=$CURR_W
+    TF_WORKSPACE_NAME=$CURR_W
+    WORKSPACE_NAME=${TF_WORKSPACE_NAME#"$ACCOUNT_NAME-"}
   fi
 fi
 if [ -z "$WORKSPACE_NAME" ]; then
@@ -139,11 +140,16 @@ if [ -z "$WORKSPACE_NAME" ]; then
   WORKSPACE_NAME="terratest-$RANDSTR"
 fi
 
-ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')---account---level"
+ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '" ')"
 
-if [ "$WORKSPACE_NAME" != "$CURR_W" ]; then
-  workspace_create_if_not_exists "$DIR" "$WORKSPACE_NAME"
-  terraform -chdir=$DIR workspace select $WORKSPACE_NAME
+if [ "$WORKSPACE_NAME" != "${CURR_W#"$ACCOUNT_NAME-"}" ]; then
+  if [ -n "$ACCOUNT_LEVEL" ] && [ "$ACCOUNT_LEVEL" != "false" ]; then
+    workspace_create_if_not_exists "$DIR" $ACCOUNT_NAME
+    workspace_select "$DIR" $ACCOUNT_NAME
+  else
+    workspace_create_if_not_exists "$DIR" $ACCOUNT_NAME $WORKSPACE_NAME
+    workspace_select "$DIR" $ACCOUNT_NAME $WORKSPACE_NAME
+  fi
 fi
 
 TFAPPLY_ARGS=()
@@ -190,8 +196,13 @@ fi
 fi
 
 terraform -chdir=$DIR init
-workspace_create_if_not_exists "$DIR" "$WORKSPACE_NAME"
-terraform -chdir=$DIR workspace select $WORKSPACE_NAME
+if [ -n "$ACCOUNT_LEVEL" ] && [ "$ACCOUNT_LEVEL" != "false" ]; then
+  workspace_create_if_not_exists "$DIR" $ACCOUNT_NAME
+  workspace_select "$DIR" $ACCOUNT_NAME
+else
+  workspace_create_if_not_exists "$DIR" $ACCOUNT_NAME $WORKSPACE_NAME
+  workspace_select "$DIR" $ACCOUNT_NAME $WORKSPACE_NAME
+fi
 
 PRIVATE_DNS_ENABLED=
 if [ -n "$NOPL" ] && [ "$NOPL" = "true" ]; then
