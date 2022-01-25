@@ -72,12 +72,12 @@ For example, if you want to import already created S3 bucket as root bucket call
 
 **./provision.sh**&#160;**&#8209;w**&#160;*my-workspace*&#160;**&#8209;import**&#160;*aws_s3_bucket.root_storage_bucket*&#160;*rootbucket-my-workspace*
 
-Running **./configure.sh** script for *my-worspace* workspace after this will not create the bucket and will use the imported bucket instead for root S3 bucket.
+Running **./configure.sh** script for *my-workspace* workspace after this will not create the bucket and will use the imported bucket instead for root S3 bucket.
 
 ### Steps to tear down deployment
 NOTE, be careful running *destroy.sh*. By default *destroy.sh* will tear down Databricks Workspace and all provisioned infrastructure Databricks and AWS.
 To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
-Running *destroy.sh* only takes an optional **-w** *\<workspace name\>* argument to execute for workspace which has previously been created. Executing *destroy.sh* without arguments will execute for active terraform workspace or workspace for which *configure.sh* was last executed. Terraform maintains state of deployment in a state file as deployment steps are executed and it simply reverses the steps that were executed when deploying and cleanly deletes all the resources that were previosly deployed. By default, *destroy.sh* will not destroy Account level resources like Usage and Audit Log Delivery bucket and infrastructure. To destroy those, run *destroy.sh* script with **--account-level** argument.
+Running *destroy.sh* only takes an optional **-w** *\<workspace name\>* argument to execute for workspace which has previously been created. Executing *destroy.sh* without arguments will execute for active terraform workspace or workspace for which *configure.sh* was last executed. Terraform maintains state of deployment in a state file as deployment steps are executed and it simply reverses the steps that were executed when deploying and cleanly deletes all the resources that were previosly deployed. By default, *destroy.sh* will not destroy Account level resources like Usage and Audit Log Delivery bucket and infrastructure. To destroy those, run *destroy.sh* script with **--account-level** or **-al** argument.
 You can also pass **--workpace-content-only** or **-wco** argument to *destroy.sh*. This will not tear down provisioned Databricks Workspace and only tear down any resources created in workspace module, so any Databricks objects like Clusters, Notebooks etc.
 
 ### NOTE
