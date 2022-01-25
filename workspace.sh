@@ -37,10 +37,6 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '" ')"
-
-$DIR/configure_tf_workspace.sh $ACCOUNT_NAME $WORKSPACE_NAME
-
 terraform -chdir=$DIR/workspace init
 workspace_create_if_not_exists $DIR/workspace $ACCOUNT_NAME $WORKSPACE_NAME
 workspace_select "$DIR/workspace" $ACCOUNT_NAME $WORKSPACE_NAME

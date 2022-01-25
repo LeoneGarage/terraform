@@ -75,8 +75,10 @@ For example, if you want to import already created S3 bucket as root bucket call
 Running **./configure.sh** script for *my-worspace* workspace after this will not create the bucket and will use the imported bucket instead for root S3 bucket.
 
 ### Steps to tear down deployment
+NOTE, be careful running *destroy.sh*. By default *destroy.sh* will tear down Databricks Workspace and all provisioned infrastructure Databricks and AWS.
 To tear down deployment after you've run *configure.sh* script, there is a *destroy.sh* script.
 Running *destroy.sh* only takes an optional **-w** *\<workspace name\>* argument to execute for workspace which has previously been created. Executing *destroy.sh* without arguments will execute for active terraform workspace or workspace for which *configure.sh* was last executed. Terraform maintains state of deployment in a state file as deployment steps are executed and it simply reverses the steps that were executed when deploying and cleanly deletes all the resources that were previosly deployed. By default, *destroy.sh* will not destroy Account level resources like Usage and Audit Log Delivery bucket and infrastructure. To destroy those, run *destroy.sh* script with **--account-level** argument.
+You can also pass **--workpace-content-only** or **-wco** argument to *destroy.sh*. This will not tear down provisioned Databricks Workspace and only tear down any resources created in workspace module, so any Databricks objects like Clusters, Notebooks etc.
 
 ### NOTE
 * If you are creating a PL Databricks Workspace the S3 VPC Gateway prevents access to global S3 url. Access to regional one only is allowed. For PL Workspaces with newly created S3 buckets sometimes it may take a bit of time to gain access to regional root S3 bucket, bypassing S3 global url. It may happen that running Test Notebook hangs due to trying to resolve S3 root bucket for DBFS mounts. In that case leaving the Workspace for an hour or so resolves the issue eventually.

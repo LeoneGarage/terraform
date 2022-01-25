@@ -116,6 +116,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)    # unknown option
       echo "Unknown option $1"
+      exit 1
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
       ;;
@@ -139,8 +140,6 @@ if [ -z "$WORKSPACE_NAME" ]; then
   RANDSTR=$(openssl rand -base64 12 | cut -c1-6 | sed 's/[^a-zA-Z0-9]//g')
   WORKSPACE_NAME="terratest-$RANDSTR"
 fi
-
-ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '" ')"
 
 if [ "$WORKSPACE_NAME" != "${CURR_W#"$ACCOUNT_NAME-"}" ]; then
   if [ -n "$ACCOUNT_LEVEL" ] && [ "$ACCOUNT_LEVEL" != "false" ]; then
