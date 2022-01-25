@@ -139,12 +139,6 @@ fi
 
 ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')---account---level"
 
-PRIVATELINK_DNS_STATE_FILE=$WORKSPACE_NAME-private-dns.tfvars
-PRIVATELINK_DNS_STATE_FILE="$(cd "$(dirname "$PRIVATELINK_DNS_STATE_FILE")"; pwd)/$(basename "$PRIVATELINK_DNS_STATE_FILE")"
-if [[( -z "$ACCOUNT_LEVEL" || "$ACCOUNT_LEVEL" = "false" ) && ! -f "$PRIVATELINK_DNS_STATE_FILE" ]]; then
-  echo "private_dns_enabled=false" > "$PRIVATELINK_DNS_STATE_FILE"
-fi
-
 if [ "$WORKSPACE_NAME" != "$CURR_W" ]; then
   set +e
   terraform -chdir=$DIR workspace new $WORKSPACE_NAME
@@ -194,9 +188,16 @@ else
   TFAPPLY_ARGS+=( -var="cmk_$NOCMK=false")
 fi
 fi
+
+PRIVATE_DNS_ENABLED=
 if [ -n "$NOPL" ] && [ "$NOPL" = "true" ]; then
   TFAPPLY_ARGS+=( -var="private_link=false")
-  echo "private_dns_enabled=false" > "$PRIVATELINK_DNS_STATE_FILE"
+else
+  if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" = "false" ]; then
+    set +e
+    PRIVATE_DNS_ENABLED=$(terraform -chdir=$DIR state show aws_vpc_endpoint.relay[0] | grep private_dns_enabled | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
+    set -e
+  fi
 fi
 
 terraform -chdir=$DIR init
@@ -217,6 +218,10 @@ if [ -n "$IMPORT_ADDR" ] ; then
   TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
 fi
 
+if [ -n "$PRIVATE_DNS_ENABLED" ]; then
+  TFAPPLY_ARGS+=( -var="private_dns_enabled=$PRIVATE_DNS_ENABLED")
+fi 
+
 # Apply terraform template to provision AWS and Databricks infra for a Workspace
 # If $FRONT_END_PL_SUBNET_IDS is provided will also create Front End VPC Endpoint in those subnets
 "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}"
@@ -229,7 +234,8 @@ if [ -z "$IMPORT_ADDR" ] ; then
 
   if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" = "false" ]; then
     # Need to setup Databricks VPC Endpoint DNS resolution which can only be done after the VPC Endpoint has been accepted after configuration
-    "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}" -var="private_dns_enabled=true"
-    echo "private_dns_enabled=true" > "$PRIVATELINK_DNS_STATE_FILE"
+    if [ -z "$PRIVATE_DNS_ENABLED" ] || [ "$PRIVATE_DNS_ENABLED" != "true" ]; then
+      "${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}" -var="private_dns_enabled=true"
+    fi
   fi
 fi
