@@ -218,7 +218,7 @@ if [ -n "$IMPORT_ADDR" ] ; then
   TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
 fi
 
-if [ -n "$PRIVATE_DNS_ENABLED" ]; then
+if [[ -n "$PRIVATE_DNS_ENABLED" && ( "$PRIVATE_DNS_ENABLED" = "true" || "$PRIVATE_DNS_ENABLED" = "false" ) ]]; then
   TFAPPLY_ARGS+=( -var="private_dns_enabled=$PRIVATE_DNS_ENABLED")
 fi 
 
