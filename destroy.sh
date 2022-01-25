@@ -2,6 +2,10 @@
 
 set -e
 
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+. $DIR/utils.sh
+
 WORKSPACE_NAME=
 ACCOUNT_LEVEL=
 
@@ -29,9 +33,7 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')---account---level"
+ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '" ')---account---level"
 
 if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" != "true" ]; then
   if [ -z "$WORKSPACE_NAME" ]; then
@@ -54,40 +56,40 @@ if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" != "true" ]; then
   fi
 
   terraform -chdir=$DIR/workspace init
-  set +e
-  if [ -n "$WORKSPACE_NAME" ]; then
-  terraform -chdir=$DIR/workspace workspace select $WORKSPACE_NAME
+  if [ -n "$WORKSPACE_NAME" ] && workspace_exists "$DIR/workspace" "$WORKSPACE_NAME" && [ -n "$WORKSPACE_EXISTS_RETURN" ]; then
+    terraform -chdir=$DIR/workspace workspace select $WORKSPACE_NAME
+    terraform -chdir=$DIR/workspace destroy -auto-approve -var="workspace=$WORKSPACE_NAME"
+    DESTROY_EXIT_CODE=$?
+    if [ $DESTROY_EXIT_CODE = 0 ]; then
+      terraform -chdir=$DIR/workspace workspace select default
+      if [ -n "$WORKSPACE_NAME" ]; then
+        terraform -chdir=$DIR/workspace workspace delete $WORKSPACE_NAME
+      fi
+    fi
   fi
-  terraform -chdir=$DIR/workspace destroy -auto-approve -var="workspace=$WORKSPACE_NAME"
-  DESTROY_EXIT_CODE=$?
-  if [ $DESTROY_EXIT_CODE = 0 ]; then
-  terraform -chdir=$DIR/workspace workspace select default
-  if [ -n "$WORKSPACE_NAME" ]; then
-  terraform -chdir=$DIR/workspace workspace delete $WORKSPACE_NAME
-  fi
-  fi
-  set -e
 
   terraform -chdir=$DIR/provision init
-  if [ -n "$WORKSPACE_NAME" ]; then
+  if [ -n "$WORKSPACE_NAME" ] && workspace_exists "$DIR/provision" "$WORKSPACE_NAME" && [ -n "$WORKSPACE_EXISTS_RETURN" ]; then
     terraform -chdir=$DIR/provision workspace select $WORKSPACE_NAME
+    VARFILE="$(cd "$(dirname "secrets.tfvars")"; pwd)/$(basename "secrets.tfvars")"
+    terraform -chdir=$DIR/provision destroy -auto-approve -var-file $VARFILE
+    terraform -chdir=$DIR/provision workspace select default
+    if [ -n "$WORKSPACE_NAME" ]; then
+      terraform -chdir=$DIR/provision workspace delete $WORKSPACE_NAME
+    fi
   fi
-  VARFILE="$(cd "$(dirname "secrets.tfvars")"; pwd)/$(basename "secrets.tfvars")"
-  terraform -chdir=$DIR/provision destroy -auto-approve -var-file $VARFILE
-  terraform -chdir=$DIR/provision workspace select default
-  if [ -n "$WORKSPACE_NAME" ]; then
-    terraform -chdir=$DIR/provision workspace delete $WORKSPACE_NAME
-  fi
-  else
+else
+  if [ workspace_exists $DIR/provision/log-delivery $ACCOUNT_NAME ] && [ -n $WORKSPACE_EXISTS_RETURN ]; then
     terraform -chdir=$DIR/provision/log-delivery init
     terraform -chdir=$DIR/provision/log-delivery workspace select $ACCOUNT_NAME
     terraform -chdir=$DIR/provision/log-delivery destroy -auto-approve -var-file $VARFILE
     terraform -chdir=$DIR/provision/log-delivery workspace select default
     terraform -chdir=$DIR/provision/log-delivery workspace delete $ACCOUNT_NAME
+  fi
 fi
 
 
-if [ -n "$WORKSPACE_NAME" ]; then
-terraform -chdir=$DIR workspace select default
-terraform -chdir=$DIR workspace delete $WORKSPACE_NAME
+if [ -n "$WORKSPACE_NAME" ] && workspace_exists "$DIR" "$WORKSPACE_NAME" && [ -n "$WORKSPACE_EXISTS_RETURN" ]; then
+  terraform -chdir=$DIR workspace select default
+  terraform -chdir=$DIR workspace delete $WORKSPACE_NAME
 fi

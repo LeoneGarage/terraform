@@ -4,6 +4,8 @@ set -e
 
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+. $DIR/utils.sh
+
 WORKSPACE_NAME=
 PLAN=
 IMPORT=
@@ -38,9 +40,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 $DIR/configure_tf_workspace.sh $WORKSPACE_NAME
 
 terraform -chdir=$DIR/workspace init
-set +e
-terraform -chdir=$DIR/workspace workspace new $WORKSPACE_NAME
-set -e
+workspace_create_if_not_exists $DIR/workspace $WORKSPACE_NAME
 terraform -chdir=$DIR/workspace workspace select $WORKSPACE_NAME
 if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
   terraform -chdir=$DIR/workspace plan -var="workspace=$WORKSPACE_NAME"

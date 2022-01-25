@@ -4,6 +4,8 @@ set -e
 
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+. $DIR/../utils.sh
+
 ACCOUNT_ID=
 USERNAME=
 PASSWORD=
@@ -140,9 +142,7 @@ fi
 ACCOUNT_NAME="$(grep databricks_account_name secrets.tfvars | cut -d'=' -f2 | tr -d '"')---account---level"
 
 if [ "$WORKSPACE_NAME" != "$CURR_W" ]; then
-  set +e
-  terraform -chdir=$DIR workspace new $WORKSPACE_NAME
-  set -e
+  workspace_create_if_not_exists "$DIR" "$WORKSPACE_NAME"
   terraform -chdir=$DIR workspace select $WORKSPACE_NAME
 fi
 
@@ -189,22 +189,20 @@ else
 fi
 fi
 
+terraform -chdir=$DIR init
+workspace_create_if_not_exists "$DIR" "$WORKSPACE_NAME"
+terraform -chdir=$DIR workspace select $WORKSPACE_NAME
+
 PRIVATE_DNS_ENABLED=
 if [ -n "$NOPL" ] && [ "$NOPL" = "true" ]; then
   TFAPPLY_ARGS+=( -var="private_link=false")
 else
   if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" = "false" ]; then
-    set +e
-    PRIVATE_DNS_ENABLED=$(terraform -chdir=$DIR state show aws_vpc_endpoint.relay[0] | grep private_dns_enabled | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
-    set -e
+    if workspace_state_get $DIR "aws_vpc_endpoint.relay[0]" "private_dns_enabled" && [ -n "$WORKSPACE_STATE_GET_RETURN" ]; then
+      PRIVATE_DNS_ENABLED=$WORKSPACE_STATE_GET_RETURN
+    fi
   fi
 fi
-
-terraform -chdir=$DIR init
-set +e
-terraform -chdir=$DIR workspace new $WORKSPACE_NAME
-set -e
-terraform -chdir=$DIR workspace select $WORKSPACE_NAME
 
 if [ -n "$FRONT_END_PL_SUBNET_IDS" ]; then
   TFAPPLY_ARGS+=( -var="front_end_pl_subnet_ids=$FRONT_END_PL_SUBNET_IDS")

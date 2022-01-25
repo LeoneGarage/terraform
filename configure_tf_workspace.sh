@@ -4,6 +4,8 @@ set -e
 
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+. $DIR/utils.sh
+
 WORKSPACE_NAME=$1
 
 CURR_W=$(terraform -chdir=$DIR workspace show)
@@ -18,8 +20,6 @@ WORKSPACE_NAME="terratest-$RANDSTR"
 fi
 
 if [ "$WORKSPACE_NAME" != "$CURR_W" ]; then
-set +e
-terraform -chdir=$DIR workspace new $WORKSPACE_NAME
-set -e
+workspace_create_if_not_exists $DIR $WORKSPACE_NAME
 terraform -chdir=$DIR workspace select $WORKSPACE_NAME
 fi
