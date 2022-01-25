@@ -96,7 +96,7 @@ if [ -n "$WORKSPACE_NAME" ] && workspace_exists "$DIR" $ACCOUNT_NAME $WORKSPACE_
   terraform -chdir=$DIR workspace select default
   workspace_delete "$DIR" $ACCOUNT_NAME $WORKSPACE_NAME
 fi
-if workspace_exists "$DIR" $ACCOUNT_NAME && [ -n "$WORKSPACE_EXISTS_RETURN" ]; then
+if [ -n "$ACCOUNT_LEVEL" ] && [ "$ACCOUNT_LEVEL" = "true" ] && workspace_exists "$DIR" $ACCOUNT_NAME && [ -n "$WORKSPACE_EXISTS_RETURN" ]; then
   terraform -chdir=$DIR workspace select default
   workspace_delete "$DIR" $ACCOUNT_NAME
 fi
