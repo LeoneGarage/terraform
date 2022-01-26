@@ -22,6 +22,8 @@ resource "databricks_cluster" "test" {
       "PYSPARK_PYTHON" : "/databricks/python3/bin/python3"
       "AWS_REGION"     : "${local.region}"
   }
+  custom_tags = var.tags
+
   aws_attributes {
     instance_profile_arn           = databricks_instance_profile.initial.instance_profile_arn
   }

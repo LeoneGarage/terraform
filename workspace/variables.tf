@@ -14,6 +14,10 @@ variable "workspace" {
   default = ""
 }
 
+variable "tags" {
+  default = {}
+}
+
 locals {
   region = length(var.region) > 0 ? var.region : data.terraform_remote_state.db.outputs.databricks_workspace_region
 }
