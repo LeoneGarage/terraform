@@ -42,6 +42,7 @@ workspace_select() {
     local TF_WORKSPACE_NAME+="-"$WORKSPACE_NAME
   fi
   terraform -chdir=$1 workspace select $TF_WORKSPACE_NAME
+  echo "Selected $TF_WORKSPACE_NAME terraform workspace in $1"
 }
 
 workspace_delete() {
