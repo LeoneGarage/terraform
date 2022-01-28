@@ -36,7 +36,7 @@ The whole thing is executed by running ./configure.sh script from root directory
 > databricks_account_username = "\<databricks account owner username>"<br>
 > databricks_account_password = "\<databricks account owner password>"<br>
 
-These are your Databricks Account Id that you can get from Databricks Account Console, Your Databricks Account Name which will be used to prefix the name of Log Delivery S3 bucket and related AWS resources since these are account wide resources, Your Databricks Account Owner User Name and Databricks Account Owner Password. If you don't have Databricks Account Id you can sign up for a 14 free trial in https://databricks.com/try-databricks to get it.
+These are your Databricks Account Id that you can get from Databricks Account Console, your Databricks Account Name which will be used to prefix the name of Log Delivery S3 bucket and related AWS resources since these are account wide resources, your Databricks Account Owner User Name and Databricks Account Owner Password. If you don't have Databricks Account Id you can sign up for a 14 free trial in https://databricks.com/try-databricks to get it.
 Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
 
 4. Once you created *secrets.tfvars* file in *provision* subdirectory, back in root directory there is a script called *configure.sh*. Run this script and pass to it *-w <your workspace name>* parameter. So for example, if I want to create a Databricks Workspace called **demo**, I would run *./configure.sh -w demo* on command line.
