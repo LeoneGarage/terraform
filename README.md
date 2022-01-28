@@ -40,7 +40,7 @@ These are your Databricks Account Id that you can get from Databricks Account Co
 Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
 
 4. Once you created *secrets.tfvars* file in *provision* subdirectory, back in root directory there is a script called *configure.sh*. Run this script and pass to it *-w <your workspace name>* parameter. So for example, if I want to create a Databricks Workspace called **demo**, I would run *./configure.sh -w demo* on command line.
-5. The script will apply the template in *provision* subdirectory and then run the teamplate in *workspace* subdirectory.
+5. The script will apply the template in *provision* subdirectory and then run the template in *workspace* subdirectory.
 6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook, created by the templates. You can run Test Notebook on Test cluster to verify that everything is working as it should.
 
 ### Usage
