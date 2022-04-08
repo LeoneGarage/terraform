@@ -33,6 +33,10 @@ while [[ $# -gt 0 ]]; do
       ACCOUNT_LEVEL="true"
       shift # past argument
       ;;
+    -no-al|--no-account-level)
+      ACCOUNT_LEVEL="false"
+      shift # past argument
+      ;;
     -plan|--plan)
       PLAN=true
       shift # past argument
@@ -53,7 +57,7 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-if [[ -z "$IMPORT_ADDR" || ( -n "$ACCOUNT_LEVEL" && "$ACCOUNT_LEVEL" = "true" )]]; then
+if [[( -z "$IMPORT_ADDR" && -z "$ACCOUNT_LEVEL" ) || ( -n "$ACCOUNT_LEVEL" && "$ACCOUNT_LEVEL" = "true" )]]; then
   CONFIGURE=($DIR/provision/configure.sh --account-level -dir "$DIR/provision/log-delivery/" -vf secrets.tfvars) # initial command
   CONFIGURE+=( -w $ACCOUNT_NAME)
   if [ -n "$REGION" ]; then
