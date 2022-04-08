@@ -32,6 +32,8 @@ provider "databricks" {
 
 locals {
   prefix = data.terraform_remote_state.db.outputs.databricks_workspace_name
+  private_link = data.terraform_remote_state.db.outputs.databricks_private_link
+  allow_outgoing_internet = data.terraform_remote_state.db.outputs.databricks_allow_outgoing_internet
 }
 
 output "databricks_host" {
