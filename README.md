@@ -60,7 +60,7 @@ Be careful with password as secrets in Terraform are stored in plain text. This 
 
 
 #### Example
-Let's assume you want to deploy a workspace called 'my-workspace' and you don't want to provision Customer Managed Keys for encryption of Managed Services objects and Root S3 Storage, and you want to deploy Front End Workspace VPC Endpoint into a VPC Subnet separate from the Workspace VPC which will be created by the template, let's assume the AWS Subnet Id in this VPC Endpoint is 'subnet-0c00ac0320cba6d93' and you want to route traffic to this subnet from another subnet in a different VPC, let's assume that subnets AWS Subnet Id is 'subnet-ad00ac0320cba6e00'. The the command line to configure the Workspace would be:
+Let's assume you want to deploy a workspace called 'my-workspace' and you don't want to provision Customer Managed Keys for encryption of Managed Services objects and Root S3 Storage, and you want to deploy Front End Workspace VPC Endpoint into a VPC Subnet separate from the Workspace VPC which will be created by the template, let's assume the AWS Subnet Id in this VPC Endpoint is 'subnet-0c00ac0320cba6d93' and you want to route traffic to this subnet from another subnet in a different VPC, let's assume that subnet's AWS Subnet Id is 'subnet-ad00ac0320cba6e00'. Then the command line to configure the Workspace would be:
 
 **./configure.sh**&#160;**&#8209;w**&#160;*my&#8209;workspace*&#160;**&#8209;nocmk**&#160;*all*&#160;**&#8209;&#8209;front_end_pl_subnet_ids**&#160;*subnet&#8209;0c00ac0320cba6d93*&nbsp;**&#8209;&#8209;front_end_pl_source_subnet_ids**&#160;*subnet&#8209;ad00ac0320cba6e00*
 
