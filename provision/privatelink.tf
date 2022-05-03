@@ -54,7 +54,7 @@ resource "aws_vpc_endpoint" "workspace" {
   },
   var.tags)
   vpc_id             = module.vpc.vpc_id
-  service_name       = local.private_link.workspace_service
+  service_name       = local.private_link[var.region].workspace_service
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl[0].id]
   subnet_ids         = [aws_subnet.pl_subnet1[0].id, aws_subnet.pl_subnet2[0].id]
@@ -75,7 +75,7 @@ resource "aws_vpc_endpoint" "relay" {
   },
   var.tags)
   vpc_id             = module.vpc.vpc_id
-  service_name       = local.private_link.relay_service
+  service_name       = local.private_link[var.region].relay_service
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl[0].id]
   subnet_ids         = [aws_subnet.pl_subnet1[0].id, aws_subnet.pl_subnet2[0].id]

@@ -54,7 +54,7 @@ resource "aws_vpc_endpoint" "front_end_workspace" {
   },
   var.tags)
   vpc_id              = local.front_end_vpc_id // This is VPC Id of trhe VPC the front end VPC Endpoint should be in
-  service_name        = local.private_link.workspace_service
+  service_name        = local.private_link[var.region].workspace_service
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [for s in aws_security_group.front_end_pl : s.id] // This is security group for the VPC Endpoint of front end VPC
   subnet_ids          = [for s in local.front_end_pl_subnets : s.id] // Subnets where the front end VPC Endpoint should be in
