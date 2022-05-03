@@ -8,6 +8,7 @@ DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 WORKSPACE_NAME=
 REGION=
+AWS_PROFILE=
 IMPORT_ADDR=
 IMPORT_ID=
 ACCOUNT_LEVEL=
@@ -48,6 +49,11 @@ while [[ $# -gt 0 ]]; do
       shift # past value
       shift # past value
       ;;
+    -ap|--aws-profile)
+      AWS_PROFILE="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -62,6 +68,9 @@ if [[( -z "$IMPORT_ADDR" && -z "$ACCOUNT_LEVEL" ) || ( -n "$ACCOUNT_LEVEL" && "$
   CONFIGURE+=( -w $ACCOUNT_NAME)
   if [ -n "$REGION" ]; then
     CONFIGURE+=( -r $REGION)
+  fi
+  if [ -n "$AWS_PROFILE" ]; then
+    CONFIGURE+=( -ap $AWS_PROFILE)
   fi
   if [ -n "$IMPORT_ADDR" ]; then
     CONFIGURE+=( -import "$IMPORT_ADDR" "$IMPORT_ID")

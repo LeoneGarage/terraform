@@ -15,6 +15,7 @@ provider "aws" {
   region = var.region
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
+  profile = var.aws_profile
 }
 
 // initialize provider in "MWS" mode to provision new workspace

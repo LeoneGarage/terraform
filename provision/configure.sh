@@ -28,6 +28,7 @@ FROND_END_PL_SOURCE_SUBNET_IDS=
 # PrivateLink on or off
 NOPL=
 ACCOUNT_LEVEL=
+AWS_PROFILE=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -114,6 +115,11 @@ while [[ $# -gt 0 ]]; do
       IGW=true
       shift # past argument
       ;;
+    -ap|--aws-profile)
+      AWS_PROFILE="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       echo "Unknown option $1"
       exit 1
@@ -181,6 +187,9 @@ if [ -n "$WORKSPACE_NAME" ]; then
 fi
 if [ -n "$REGION" ]; then
   TFAPPLY_ARGS+=( -var="region=$REGION")
+fi
+if [ -n "$AWS_PROFILE" ]; then
+  TFAPPLY_ARGS+=( -var="aws_profile=$AWS_PROFILE")
 fi
 if [ -n "$IGW" ] && [ "$IGW" = "true" ]; then
   TFAPPLY_ARGS+=( -var="allow_outgoing_internet=true")

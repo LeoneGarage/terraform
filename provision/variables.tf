@@ -22,6 +22,10 @@ variable "aws_secret_key" {
   default = ""
 }
 
+variable "aws_profile" {
+  default = ""
+}
+
 variable "tags" {
   default = {}
 }
