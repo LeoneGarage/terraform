@@ -25,6 +25,9 @@ variable "aws_secret_key" {
 variable "aws_profile" {
   default = ""
 }
+variable "required_az_total" {
+  default = "2"
+}
 
 variable "tags" {
   default = {}
@@ -144,4 +147,6 @@ locals {
   small_subnet_cidrs = [for i in range(0, 10) : cidrsubnet(cidrsubnet(local.cidr_block, var.subnet_offset, pow(2, var.subnet_offset)-1),
    32 - var.cidr_block_prefix - var.subnet_offset - 4,
     pow(2, 32 - var.cidr_block_prefix - var.subnet_offset - 4) - 1 - i)]
+
+  required_azs = var.required_az_total == "all" ? length(data.aws_availability_zones.available.names) : tonumber(var.required_az_total)
 }

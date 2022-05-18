@@ -1,42 +1,46 @@
-data "aws_availability_zones" "available" {}
+data "aws_availability_zones" "available" {
+  state = "available"
+}
 data "aws_caller_identity" "current" {}
 
 locals {
-    policy_json_sts = {
-    "Statement": [
-        {
-            "Action": [
-                "sts:AssumeRole",
-                "sts:AssumeRoleWithSAML",
-                "sts:AssumeRoleWithWebIdentity",
-                "sts:DecodeAuthorizationMessage",
-                "sts:GetAccessKeyInfo",
-                "sts:GetCallerIdentity",
-                "sts:GetFederationToken",
-                "sts:GetServiceBearerToken",
-                "sts:GetSessionToken",
-                "sts:TagSession"
-            ],
-            "Effect": "Allow",
-            "Resource": "*",
-            "Principal": {
-                "AWS": "414351767826"
-            }
-        },
-        {
-            "Action": [
-                "sts:AssumeRole",
-                "sts:GetAccessKeyInfo",
-                "sts:GetSessionToken",
-                "sts:DecodeAuthorizationMessage",
-                "sts:TagSession"
-            ],
-            "Effect": "Allow",
-            "Resource": "*",
-            "Principal": {
-                "AWS": "${data.aws_caller_identity.current.account_id}"
-            }
-        }
+  azs = slice(data.aws_availability_zones.available.names, 0, local.required_azs)
+
+  policy_json_sts = {
+  "Statement": [
+      {
+          "Action": [
+              "sts:AssumeRole",
+              "sts:AssumeRoleWithSAML",
+              "sts:AssumeRoleWithWebIdentity",
+              "sts:DecodeAuthorizationMessage",
+              "sts:GetAccessKeyInfo",
+              "sts:GetCallerIdentity",
+              "sts:GetFederationToken",
+              "sts:GetServiceBearerToken",
+              "sts:GetSessionToken",
+              "sts:TagSession"
+          ],
+          "Effect": "Allow",
+          "Resource": "*",
+          "Principal": {
+              "AWS": "414351767826"
+          }
+      },
+      {
+          "Action": [
+              "sts:AssumeRole",
+              "sts:GetAccessKeyInfo",
+              "sts:GetSessionToken",
+              "sts:DecodeAuthorizationMessage",
+              "sts:TagSession"
+          ],
+          "Effect": "Allow",
+          "Resource": "*",
+          "Principal": {
+              "AWS": "${data.aws_caller_identity.current.account_id}"
+          }
+      }
     ]
   }
 }
@@ -47,7 +51,7 @@ module "vpc" {
 
   name = "${local.prefix}-vpc"
   cidr = local.cidr_block
-  azs  = data.aws_availability_zones.available.names
+  azs  = local.azs
   tags = var.tags
 
   enable_dns_hostnames = true
@@ -55,11 +59,8 @@ module "vpc" {
   single_nat_gateway   = false
   create_igw           = var.allow_outgoing_internet || !var.private_link
 
-  public_subnets = !(var.allow_outgoing_internet || !var.private_link) ? [] : [local.small_subnet_cidrs[2], local.small_subnet_cidrs[3]]
-  private_subnets = [
-    cidrsubnet(local.cidr_block, var.subnet_offset, 0),
-    cidrsubnet(local.cidr_block, var.subnet_offset, 1)
-  ]
+  public_subnets = !(var.allow_outgoing_internet || !var.private_link) ? [] : slice(local.small_subnet_cidrs, local.required_azs, local.required_azs * 2)
+  private_subnets = [ for raz in range(local.required_azs) : cidrsubnet(local.cidr_block, var.subnet_offset, raz) ]
 
   manage_default_security_group = true
   default_security_group_name   = "${local.prefix}-sg"
@@ -172,7 +173,7 @@ resource "databricks_mws_networks" "this" {
 
 resource "aws_default_network_acl" "main" {
   default_network_acl_id = module.vpc.default_network_acl_id
-  subnet_ids = concat(module.vpc.private_subnets, var.private_link ? [aws_subnet.pl_subnet1[0].id, aws_subnet.pl_subnet2[0].id] : [])
+  subnet_ids = concat(module.vpc.private_subnets, var.private_link ? [for pl_s in aws_subnet.pl_subnets : pl_s.id] : [])
 
   ingress {
     protocol   = "all"

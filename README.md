@@ -57,6 +57,8 @@ Be careful with password as secrets in Terraform are stored in plain text. This 
 |**--front_end_access** private \| public | - optional, Specify whether you still wish to allow public Internet access to your Workspace URL or not. If you deny public access and you are running these templates from a VM that is not routable to Front End VPC Endpoint subnets specified in --front_end_pl_subnet_ids, the *workspace* templates will not be able to access the Workspace APIs |
 |**-no-al \| --no-account-level** | - optional, Specify whether you want to bypass deploying any Account Level resources (Audit/Usage/Billing logging). By default, if these are already deployed and terraform state is available the deployment will be bypassed anyway, but sometime it's useful to explictly bypass |
 |**-al \| --account-level** | - optional, Specify whether you only want to deploy Account Level resources (Audit/Usage/Billing logging). By default, if these are not already deployed or terraform state is not available the deployment will be done for Account Level resources anyway. However if you want to only deploy Account Level resources and nothing else, specify this option |
+|**-ap \| --aws-profile** | - optional, if not specified default profile is used, Specify which profile configured by aws cli to use for interacting with AWS Account |
+|**-razt \| --required-az-total** | - optional, defaults to 2 if not specified, Specify how many AWS Availability Zones to configure for the Databricks Workspace VPC infrastructure. Minimum value is 2, cannot be higher than number of AWS Availability Zones in the region. If **all** is specifiied will configure infrastructure for all AWS Availability Zones in region |
 
 
 #### Example

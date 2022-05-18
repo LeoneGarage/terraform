@@ -1,8 +1,7 @@
 locals {
   cidr_blocks = concat([cidrsubnet(local.cidr_block, var.subnet_offset, 0),
      cidrsubnet(local.cidr_block, var.subnet_offset, 1)],
-     var.private_link ? [aws_subnet.pl_subnet1[0].cidr_block,
-     aws_subnet.pl_subnet2[0].cidr_block] : [])
+     var.private_link ? [for pl_s in aws_subnet.pl_subnets : pl_s.cidr_block] : [])
 }
 
 resource "aws_security_group" "pl" {
@@ -57,13 +56,11 @@ resource "aws_vpc_endpoint" "workspace" {
   service_name       = local.private_link[var.region].workspace_service
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl[0].id]
-  subnet_ids         = [aws_subnet.pl_subnet1[0].id, aws_subnet.pl_subnet2[0].id]
+  subnet_ids         = [for pl_s in aws_subnet.pl_subnets : pl_s.id]
   private_dns_enabled = var.private_dns_enabled
   depends_on         = [
-    aws_subnet.pl_subnet1,
-    aws_subnet.pl_subnet2,
-    aws_route_table_association.pl_subnet1_route_table_assoc,
-    aws_route_table_association.pl_subnet2_route_table_assoc,
+    aws_subnet.pl_subnets,
+    aws_route_table_association.pl_subnets_route_table_assoc,
     aws_security_group.pl
   ]
 }
@@ -78,38 +75,47 @@ resource "aws_vpc_endpoint" "relay" {
   service_name       = local.private_link[var.region].relay_service
   vpc_endpoint_type  = "Interface"
   security_group_ids = [aws_security_group.pl[0].id]
-  subnet_ids         = [aws_subnet.pl_subnet1[0].id, aws_subnet.pl_subnet2[0].id]
+  subnet_ids         = [for pl_s in aws_subnet.pl_subnets : pl_s.id]
   private_dns_enabled = var.private_dns_enabled
   depends_on         = [
-    aws_subnet.pl_subnet1,
-    aws_subnet.pl_subnet2,
-    aws_route_table_association.pl_subnet1_route_table_assoc,
-    aws_route_table_association.pl_subnet2_route_table_assoc,
+    aws_subnet.pl_subnets,
+    aws_route_table_association.pl_subnets_route_table_assoc,
     aws_security_group.pl
   ]
 }
 
-resource "aws_subnet" "pl_subnet1" {
-  count = var.private_link ? 1 : 0
+resource "aws_subnet" "pl_subnets" {
+  for_each = { for az in range(var.private_link ? local.required_azs: 0): az => az }
   vpc_id     = module.vpc.vpc_id
-  availability_zone = data.aws_availability_zones.available.names[0]
-  cidr_block = local.small_subnet_cidrs[0]
+  availability_zone = data.aws_availability_zones.available.names[each.value]
+  cidr_block = local.small_subnet_cidrs[each.value]
   tags = merge({
-    Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[0]}"
+    Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[each.value]}"
   },
   var.tags)
 }
 
-resource "aws_subnet" "pl_subnet2" {
-  count = var.private_link ? 1 : 0
-  vpc_id     = module.vpc.vpc_id
-  availability_zone = data.aws_availability_zones.available.names[1]
-  cidr_block = local.small_subnet_cidrs[1]
-  tags = merge({
-    Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[1]}"
-  },
-  var.tags)
-}
+# resource "aws_subnet" "pl_subnet1" {
+#   count = var.private_link ? 1 : 0
+#   vpc_id     = module.vpc.vpc_id
+#   availability_zone = data.aws_availability_zones.available.names[0]
+#   cidr_block = local.small_subnet_cidrs[0]
+#   tags = merge({
+#     Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[0]}"
+#   },
+#   var.tags)
+# }
+
+# resource "aws_subnet" "pl_subnet2" {
+#   count = var.private_link ? 1 : 0
+#   vpc_id     = module.vpc.vpc_id
+#   availability_zone = data.aws_availability_zones.available.names[1]
+#   cidr_block = local.small_subnet_cidrs[1]
+#   tags = merge({
+#     Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[1]}"
+#   },
+#   var.tags)
+# }
 
 resource "aws_route_table" "pl_subnet_route_table" {
   count = var.private_link ? 1 : 0
@@ -121,7 +127,13 @@ resource "aws_route_table" "pl_subnet_route_table" {
   var.tags)
 }
 
-resource "aws_route_table_association" "pl_subnet1_route_table_assoc" {
+resource "aws_route_table_association" "pl_subnets_route_table_assoc" {
+  for_each = aws_subnet.pl_subnets
+  subnet_id = each.value.id
+  route_table_id = aws_route_table.pl_subnet_route_table[0].id
+}
+
+/*resource "aws_route_table_association" "pl_subnet1_route_table_assoc" {
   count = var.private_link ? 1 : 0
   subnet_id = aws_subnet.pl_subnet1[0].id
   route_table_id = aws_route_table.pl_subnet_route_table[0].id
@@ -131,7 +143,7 @@ resource "aws_route_table_association" "pl_subnet2_route_table_assoc" {
   count = var.private_link ? 1 : 0
   subnet_id = aws_subnet.pl_subnet2[0].id
   route_table_id = aws_route_table.pl_subnet_route_table[0].id
-}
+}*/
 
 resource "databricks_mws_vpc_endpoint" "workspace" {
   count = var.private_link ? 1 : 0

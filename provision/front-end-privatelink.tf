@@ -1,7 +1,7 @@
 locals {
     subnets = {
         existing = data.aws_subnet.front_end_pl_subnets
-        created = [aws_subnet.pl_subnet1, aws_subnet.pl_subnet2]
+        created = aws_subnet.pl_subnets
     }
     front_end_pl_subnets = local.subnets[length(data.aws_subnet.front_end_pl_subnets) > 0 ? "existing" : "created"]
     create_front_end_pl = length(local.subnets["existing"]) > 0 ? 1 : 0

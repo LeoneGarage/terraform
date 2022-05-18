@@ -29,6 +29,7 @@ FROND_END_PL_SOURCE_SUBNET_IDS=
 NOPL=
 ACCOUNT_LEVEL=
 AWS_PROFILE=
+REQUIRED_AZ_TOTAL=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -120,6 +121,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -razt|--required-az_total)
+      REQUIRED_AZ_TOTAL="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       echo "Unknown option $1"
       exit 1
@@ -201,6 +207,9 @@ if [ "$NOCMK" = "all" ]; then
 else
   TFAPPLY_ARGS+=( -var="cmk_$NOCMK=false")
 fi
+fi
+if [ -n "$REQUIRED_AZ_TOTAL" ]; then
+  TFAPPLY_ARGS+=( -var="required_az_total=$REQUIRED_AZ_TOTAL")
 fi
 
 terraform -chdir=$DIR init
