@@ -121,7 +121,7 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -razt|--required-az_total)
+    -razt|--required-az-total)
       REQUIRED_AZ_TOTAL="$2"
       shift # past argument
       shift # past value
