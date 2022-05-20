@@ -24,7 +24,10 @@ locals {
           "Effect": "Allow",
           "Resource": "*",
           "Principal": {
-              "AWS": "414351767826"
+              "AWS": [
+                        "414351767826",
+                        "arn:aws:iam::414351767826:user/databricks-datasets-readonly-user"
+                     ]
           }
       },
       {
