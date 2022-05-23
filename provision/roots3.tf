@@ -1,14 +1,17 @@
 resource "aws_s3_bucket" "root_storage_bucket" {
   provider = aws
   bucket = "rootbucket-${local.prefix}"
-  acl    = "private"
-  versioning {
-    enabled = false
-  }
   force_destroy = true
   tags = merge(var.tags, {
     Name = "rootbucket-${local.prefix}"
   })
+}
+
+resource "aws_s3_bucket_versioning" "root_storage_bucket_versioning" {
+  bucket = aws_s3_bucket.root_storage_bucket.id
+  versioning_configuration {
+    status = "Disabled"
+  }
 }
 
 resource "aws_s3_bucket_ownership_controls" "root_storage_bucket" {

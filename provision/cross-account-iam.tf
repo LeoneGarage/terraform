@@ -21,10 +21,8 @@ locals {
                     "ec2:AuthorizeSecurityGroupEgress",
                     "ec2:AuthorizeSecurityGroupIngress",
                     "ec2:CancelSpotInstanceRequests",
-                    "ec2:CreatePlacementGroup",
                     "ec2:CreateTags",
                     "ec2:CreateVolume",
-                    "ec2:DeletePlacementGroup",
                     "ec2:DeleteTags",
                     "ec2:DeleteVolume",
                     "ec2:DescribeAvailabilityZones",
@@ -34,7 +32,6 @@ locals {
                     "ec2:DescribeInternetGateways",
                     "ec2:DescribeNatGateways",
                     "ec2:DescribeNetworkAcls",
-                    "ec2:DescribePlacementGroups",
                     "ec2:DescribePrefixLists",
                     "ec2:DescribeReservedInstancesOfferings",
                     "ec2:DescribeRouteTables",
@@ -94,5 +91,8 @@ resource "databricks_mws_credentials" "this" {
   account_id       = var.databricks_account_id
   role_arn         = aws_iam_role.cross_account_role.arn
   credentials_name = "${local.prefix}-creds"
-  depends_on       = [aws_iam_role_policy.this]
+  depends_on       = [
+      time_sleep.wait,
+      aws_iam_role_policy.this
+      ]
 }

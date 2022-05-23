@@ -4,14 +4,22 @@ locals {
 
 resource "aws_s3_bucket" "logdelivery" {
   bucket = "${local.account_name}-logdelivery"
-  acl    = "private"
-  versioning {
-    enabled = false
-  }
   force_destroy = true
   tags = merge(var.tags, {
     Name = "${local.account_name}-logdelivery"
   })
+}
+
+resource "aws_s3_bucket_acl" "logdelivery_acl" {
+  bucket = aws_s3_bucket.logdelivery.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_versioning" "logdelivery_versioning" {
+  bucket = aws_s3_bucket.logdelivery.id
+  versioning_configuration {
+    status = "Disabled"
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "logdelivery" {
