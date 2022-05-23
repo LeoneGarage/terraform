@@ -1,7 +1,8 @@
 resource "time_sleep" "wait" {
   depends_on = [
-  aws_iam_role.cross_account_role]
-  create_duration = "40s"
+  aws_iam_role.cross_account_role,
+  aws_iam_role_policy.this]
+  create_duration = "20s"
 }
 
 resource "databricks_mws_workspaces" "this" {
