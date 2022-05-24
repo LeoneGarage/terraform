@@ -88,6 +88,10 @@ variable "private_link" {
   default = true
 }
 
+variable "no_deployment_prefix" {
+  default = false
+}
+
 resource "random_string" "naming" {
   special = false
   upper   = false

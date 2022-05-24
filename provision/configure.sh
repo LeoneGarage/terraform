@@ -30,6 +30,7 @@ NOPL=
 ACCOUNT_LEVEL=
 AWS_PROFILE=
 REQUIRED_AZ_TOTAL=
+NODP=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -126,6 +127,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -nodp|--no-deployment-prefix)
+      NODP=true
+      shift # past argument
+      ;;
     *)    # unknown option
       echo "Unknown option $1"
       exit 1
@@ -210,6 +215,9 @@ fi
 fi
 if [ -n "$REQUIRED_AZ_TOTAL" ]; then
   TFAPPLY_ARGS+=( -var="required_az_total=$REQUIRED_AZ_TOTAL")
+fi
+if [ -n "$NODP" ] && [ "$NODP" = "true" ]; then
+  TFAPPLY_ARGS+=( -var="no_deployment_prefix=true")
 fi
 
 terraform -chdir=$DIR init

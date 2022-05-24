@@ -10,7 +10,7 @@ resource "databricks_mws_workspaces" "this" {
   account_id      = var.databricks_account_id
   aws_region      = var.region
   workspace_name  = local.prefix
-  deployment_name = local.prefix
+  deployment_name = var.no_deployment_prefix ? null : local.prefix
 
   credentials_id           = databricks_mws_credentials.this.credentials_id
   storage_configuration_id = databricks_mws_storage_configurations.this.storage_configuration_id
@@ -19,8 +19,6 @@ resource "databricks_mws_workspaces" "this" {
 
   managed_services_customer_managed_key_id = var.cmk_managed ? databricks_mws_customer_managed_keys.managed_services[0].customer_managed_key_id : null
   storage_customer_managed_key_id = var.cmk_storage ? databricks_mws_customer_managed_keys.storage[0].customer_managed_key_id : null
-
-  pricing_tier               = "ENTERPRISE"
 
   token {
     comment = "Terraform"
