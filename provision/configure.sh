@@ -131,6 +131,10 @@ while [[ $# -gt 0 ]]; do
       NODP=true
       shift # past argument
       ;;
+    -no-al|--no-account-level)
+      ACCOUNT_LEVEL=false
+      shift # past argument
+      ;;
     *)    # unknown option
       echo "Unknown option $1"
       exit 1
