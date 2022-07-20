@@ -9,6 +9,7 @@ DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 WORKSPACE_NAME=
 ACCOUNT_LEVEL=
 DESTROY_WORKSPACE_CONTENT_ONLY=
+REGION=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -28,6 +29,11 @@ while [[ $# -gt 0 ]]; do
       ACCOUNT_LEVEL="true"
       shift # past argument
       ;;
+    -r|--region)
+      REGION="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       echo "Unknown option $1"
       exit 1
@@ -41,11 +47,16 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 VARFILE="$(cd "$(dirname "secrets.tfvars")"; pwd)/$(basename "secrets.tfvars")"
 
+ARGS=()
+if [ -n "$REGION" ]; then
+  ARGS+=( -var="region=$REGION")
+fi
+
 if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" != "true" ]; then
-  workspace_destroy "$DIR/workspace" $ACCOUNT_NAME "$WORKSPACE_NAME" true
+  workspace_destroy "$DIR/workspace" $ACCOUNT_NAME "$WORKSPACE_NAME" true $ARGS
   if [ -z "$DESTROY_WORKSPACE_CONTENT_ONLY" ] || [ "$DESTROY_WORKSPACE_CONTENT_ONLY" != "true" ]; then
-    workspace_destroy "$DIR/provision" $ACCOUNT_NAME "$WORKSPACE_NAME" false -var-file=$VARFILE
+    workspace_destroy "$DIR/provision" $ACCOUNT_NAME "$WORKSPACE_NAME" false -var-file=$VARFILE $ARGS
   fi
 else
-  workspace_account_destroy "$DIR/provision/log-delivery" $ACCOUNT_NAME -var-file=$VARFILE
+  workspace_account_destroy "$DIR/provision/log-delivery" $ACCOUNT_NAME -var-file=$VARFILE $ARGS
 fi
