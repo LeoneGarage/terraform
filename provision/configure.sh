@@ -158,7 +158,7 @@ if [ -z "$WORKSPACE_NAME" ]; then
   fi
 fi
 if [ -z "$WORKSPACE_NAME" ]; then
-  RANDSTR=$(openssl rand -base64 12 | cut -c1-6 | sed 's/[^a-zA-Z0-9]//g')
+  RANDSTR=$(openssl rand -base64 12 | cut -c1-6 | sed 's/[^a-zA-Z0-9]//g' | tr '[:upper:]' '[:lower:]')
   WORKSPACE_NAME="terratest-$RANDSTR"
 fi
 
