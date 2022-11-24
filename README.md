@@ -3,6 +3,9 @@
 
 This repo contains terraform templates and scripts for provisioning a E2 Databricks Workspace on AWS with PrivateLink. It includes all the AWS VPC infrastructure provisioning.
 
+The following diagram describes E2 Databricks deployment architecture for these Terraform templates
+![E2 Deployment Architecture](https://raw.githubusercontent.com/LeoneGarage/terraform/master/E2%20%2B%20PL.png)
+
 Running the templates will do the following:
 * Provision AWS VPC in ap-southeast-2 region with 2 subnets in different AZs for the Workspace and 2 subnets in different AZs for PL (for redundancy). AWS Region can also be specified with -r argument, see Usage section below.
   - By default VPC CIDR is 10.0.0.0/16 and subnets 10.0.0.0/19. This gives you over 8000 IP addresses per subnet/AZ, so over 4000 cluster nodes. If you want to adjust these ranges you can modify *cidr_block_prefix* and *subnet_offset* variables in *provision/variables.tf* file before running the template. Keep in mind that subnet netmask must be between /17 and /26 and you need to fit at least 2 Workspace subnets in different AZs. In addition, you need smaller subnets for PL and NAT, if choosing that option. This means *subnet_offset* should not be less than 2 (so 2 bits to allow space for 2 Workspace subnets and space for additional small subnets). You only need to specify *cidr_block_prefix* and *subnet_offset* variables, the template works out cidr for small subnets out of available space.
