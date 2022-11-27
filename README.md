@@ -4,7 +4,7 @@
 This repo contains terraform templates and scripts for provisioning a E2 Databricks Workspace on AWS with PrivateLink. It includes all the AWS VPC infrastructure provisioning.
 
 The following diagram describes E2 Databricks deployment architecture for these Terraform templates
-![E2 Deployment Architecture](https://raw.githubusercontent.com/LeoneGarage/terraform/master/E2%20%2B%20PL.png?)
+![E2 Deployment Architecture](https://raw.githubusercontent.com/LeoneGarage/terraform/master/E2%20%2B%20PL.png)
 
 Running the templates will do the following:
 * Provision AWS VPC in ap-southeast-2 region with 2 subnets in different AZs for the Workspace and 2 subnets in different AZs for PL (for redundancy). AWS Region can also be specified with -r argument, see Usage section below.
