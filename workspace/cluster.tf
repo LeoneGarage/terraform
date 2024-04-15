@@ -25,7 +25,6 @@ resource "databricks_cluster" "test" {
     "spark.databricks.hive.metastore.glueCatalog.enabled" : true
   }
   spark_env_vars = {
-      "PYSPARK_PYTHON" : "/databricks/python3/bin/python3"
       "AWS_REGION"     : "${local.region}"
   }
   custom_tags = var.tags
@@ -34,4 +33,5 @@ resource "databricks_cluster" "test" {
     instance_profile_arn           = databricks_instance_profile.initial.instance_profile_arn
     zone_id                        = "auto"
   }
+  data_security_mode = "USER_ISOLATION"
 }

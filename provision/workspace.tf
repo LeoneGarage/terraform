@@ -29,3 +29,15 @@ resource "databricks_mws_workspaces" "this" {
       databricks_mws_networks.this
   ]
 }
+
+data "databricks_metastore" "this" {
+  provider     = databricks.mws
+  metastore_id = data.terraform_remote_state.unity.outputs.databricks_metastore_id
+}
+
+resource "databricks_metastore_assignment" "default_metastore" {
+  provider             = databricks.mws
+  workspace_id         = databricks_mws_workspaces.this.workspace_id
+  metastore_id         = data.databricks_metastore.this.metastore_id
+  default_catalog_name = "hive_metastore"
+}

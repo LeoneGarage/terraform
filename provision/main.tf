@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     databricks = {
-      source  = "databrickslabs/databricks"
-      version = "0.5.7"
+      source  = "databricks/databricks"
+      version = "1.39.0"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -22,6 +22,15 @@ provider "aws" {
 provider "databricks" {
   alias    = "mws"
   host     = "https://accounts.cloud.databricks.com"
+  account_id = var.databricks_account_id
   username = var.databricks_account_username
   password = var.databricks_account_password
+}
+
+data "terraform_remote_state" "unity" {
+  backend = "local"
+
+  config = {
+    path = "log-delivery/terraform.tfstate.d/${var.databricks_account_name}/terraform.tfstate"
+  }
 }

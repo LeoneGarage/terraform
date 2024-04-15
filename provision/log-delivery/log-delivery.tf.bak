@@ -10,10 +10,10 @@ resource "aws_s3_bucket" "logdelivery" {
   })
 }
 
-resource "aws_s3_bucket_acl" "logdelivery_acl" {
-  bucket = aws_s3_bucket.logdelivery.id
-  acl    = "private"
-}
+# resource "aws_s3_bucket_acl" "logdelivery_acl" {
+#   bucket = aws_s3_bucket.logdelivery.id
+#   acl    = "private"
+# }
 
 resource "aws_s3_bucket_versioning" "logdelivery_versioning" {
   bucket = aws_s3_bucket.logdelivery.id
