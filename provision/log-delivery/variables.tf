@@ -38,6 +38,10 @@ variable "databricks_workspace_name" {
   default = ""
 }
 
+variable "metastore_id" {
+  default = ""
+}
+
 locals {
   prefix = var.databricks_workspace_name
 }

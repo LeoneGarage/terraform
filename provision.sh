@@ -13,6 +13,7 @@ IMPORT_ADDR=
 IMPORT_ID=
 ACCOUNT_LEVEL=
 PLAN=
+METASTORE_ID=
 
 SAVED="$@"
 POSITIONAL=()
@@ -54,6 +55,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -mid|--metastore_id)
+      METASTORE_ID="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -72,6 +78,9 @@ if [[( -z "$IMPORT_ADDR" && -z "$ACCOUNT_LEVEL" ) || ( -n "$ACCOUNT_LEVEL" && "$
   if [ -n "$AWS_PROFILE" ]; then
     CONFIGURE+=( -ap $AWS_PROFILE)
   fi
+  if [ -n "$METASTORE_ID" ]; then
+    CONFIGURE+=( -mid $METASTORE_ID)
+  fi
   if [ -n "$IMPORT_ADDR" ]; then
     CONFIGURE+=( -import "$IMPORT_ADDR" "$IMPORT_ID")
   fi
@@ -82,7 +91,7 @@ if [[( -z "$IMPORT_ADDR" && -z "$ACCOUNT_LEVEL" ) || ( -n "$ACCOUNT_LEVEL" && "$
   "${CONFIGURE[@]}"
 fi
 
-if [[ -z "$IMPORT_ADDR" || ( -z "$ACCOUNT_LEVEL" || "$ACCOUNT_LEVEL" != "true" ) ]]; then
+if [[ -n "$IMPORT_ADDR" || ( -z "$ACCOUNT_LEVEL" || "$ACCOUNT_LEVEL" != "true" ) ]]; then
   CONFIGURE=($DIR/provision/configure.sh -vf secrets.tfvars) # initial command
   CONFIGURE+=( ${SAVED} )
   "${CONFIGURE[@]}"

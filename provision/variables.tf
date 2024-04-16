@@ -92,6 +92,10 @@ variable "no_deployment_prefix" {
   default = false
 }
 
+variable "metastore_id" {
+  default = ""
+}
+
 resource "random_string" "naming" {
   special = false
   upper   = false

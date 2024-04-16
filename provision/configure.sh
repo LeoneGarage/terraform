@@ -31,6 +31,7 @@ ACCOUNT_LEVEL=
 AWS_PROFILE=
 REQUIRED_AZ_TOTAL=
 NODP=
+METASTORE_ID=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -135,6 +136,11 @@ while [[ $# -gt 0 ]]; do
       ACCOUNT_LEVEL=false
       shift # past argument
       ;;
+    -mid|--metastore_id)
+      METASTORE_ID="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       echo "Unknown option $1"
       exit 1
@@ -222,6 +228,9 @@ if [ -n "$REQUIRED_AZ_TOTAL" ]; then
 fi
 if [ -n "$NODP" ] && [ "$NODP" = "true" ]; then
   TFAPPLY_ARGS+=( -var="no_deployment_prefix=true")
+fi
+if [ -n "$METASTORE_ID" ]; then
+  TFAPPLY_ARGS+=( -var="metastore_id=$METASTORE_ID")
 fi
 
 terraform -chdir=$DIR init
