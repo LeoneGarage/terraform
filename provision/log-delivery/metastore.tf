@@ -1,5 +1,6 @@
 locals {
-  role_arn         = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.databricks_account_name}-metastore-access"
+  role_name        = "${var.databricks_account_name}-metastore-access"
+  role_arn         = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.role_name}"
 }
 
 data "aws_availability_zones" "available" {
@@ -69,7 +70,7 @@ resource "aws_iam_policy" "metastore_data_access" {
   // Terraform expression's result to valid JSON syntax.
   policy = jsonencode({
     Version = "2012-10-17"
-    Id      = "${var.databricks_account_name}-metastore-access"
+    Id      = "${local.role_name}"
     Statement = [
       {
         "Action" : [
@@ -92,7 +93,7 @@ resource "aws_iam_policy" "metastore_data_access" {
           "sts:AssumeRole"
         ],
         "Resource" : [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.databricks_account_name}-metastore-access"
+          "${local.role_arn}"
         ],
         "Effect" : "Allow"
       },
@@ -105,7 +106,7 @@ resource "aws_iam_policy" "metastore_data_access" {
 
 resource "aws_iam_role" "metastore_data_access" {
   count = var.metastore_id=="" ? 1 : 0
-  name                = "${var.databricks_account_name}-metastore-access"
+  name                = local.role_name
   assume_role_policy  = data.aws_iam_policy_document.passrole_for_uc.json
   managed_policy_arns = [aws_iam_policy.metastore_data_access[0].arn]
   tags = merge(var.tags, {
