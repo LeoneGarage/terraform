@@ -33,5 +33,5 @@ resource "databricks_cluster" "test" {
     instance_profile_arn           = databricks_instance_profile.initial.instance_profile_arn
     zone_id                        = "auto"
   }
-  data_security_mode = "USER_ISOLATION"
+  data_security_mode = !local.allow_outgoing_internet ? "SINGLE_USER": "USER_ISOLATION"
 }
