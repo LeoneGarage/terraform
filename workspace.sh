@@ -8,7 +8,9 @@ DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 WORKSPACE_NAME=
 PLAN=
-IMPORT=
+# Only import the resources
+IMPORT_ADDR=
+IMPORT_ID=
 REGION=
 AWS_PROFILE=
 
@@ -22,8 +24,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       ;;
     -import)
-      IMPORT=true
+      IMPORT_ADDR="$2"
       shift # past argument
+      IMPORT_ID="$2"
+      shift # past value
+      shift # past value
       ;;
     -w|--workspace)
       WORKSPACE_NAME="$2"
@@ -53,23 +58,28 @@ terraform -chdir=$DIR/workspace init
 workspace_create_if_not_exists $DIR/workspace $ACCOUNT_NAME $WORKSPACE_NAME
 workspace_select "$DIR/workspace" $ACCOUNT_NAME $WORKSPACE_NAME
 TFAPPLY=()
+TFAPPLY_ARGS=()
 if [ -n "$PLAN" ] && [ "$PLAN" = "true" ]; then
-  TFAPPLY=(terraform -chdir=$DIR/workspace plan -var="workspace=$ACCOUNT_NAME-$WORKSPACE_NAME")
+  TFAPPLY=(terraform -chdir=$DIR/workspace plan)
 else
-  if [ -n "$IMPORT" ] && [ "$IMPORT" = "true" ]; then
-    TFAPPLY=(terraform -chdir=$DIR/workspace import -var="workspace=$ACCOUNT_NAME-$WORKSPACE_NAME")
+  if [ -n "$IMPORT_ADDR" ]; then
+    TFAPPLY=(terraform -chdir=$DIR/workspace import)
   else
-    TFAPPLY=(terraform -chdir=$DIR/workspace apply -auto-approve -var="workspace=$ACCOUNT_NAME-$WORKSPACE_NAME")
+    TFAPPLY=(terraform -chdir=$DIR/workspace apply -auto-approve)
   fi
 fi
+TFAPPLY_ARGS+=( -var="workspace=$ACCOUNT_NAME-$WORKSPACE_NAME")
 if [ -n "$REGION" ]; then
-  TFAPPLY+=( -var="region=$REGION")
+  TFAPPLY_ARGS+=( -var="region=$REGION")
 fi
 if [ -n "$AWS_PROFILE" ]; then
-  TFAPPLY+=( -var="aws_profile=$AWS_PROFILE")
+  TFAPPLY_ARGS+=( -var="aws_profile=$AWS_PROFILE")
 fi
 
+if [ -n "$IMPORT_ADDR" ]; then
+  TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
+fi
 
 # Apply terraform template to provision Databricks Workspace
 # If $FRONT_END_PL_SUBNET_IDS is provided will also create Front End VPC Endpoint in those subnets
-"${TFAPPLY[@]}"
+"${TFAPPLY[@]}" "${TFAPPLY_ARGS[@]}"
