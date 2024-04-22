@@ -31,6 +31,6 @@ data "terraform_remote_state" "unity" {
   backend = "local"
 
   config = {
-    path = "log-delivery/terraform.tfstate.d/${var.databricks_account_name}/terraform.tfstate"
+    path = "account-level/terraform.tfstate.d/${var.databricks_account_name}/terraform.tfstate"
   }
 }

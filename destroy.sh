@@ -58,5 +58,5 @@ if [ -z "$ACCOUNT_LEVEL" ] || [ "$ACCOUNT_LEVEL" != "true" ]; then
     workspace_destroy "$DIR/provision" $ACCOUNT_NAME "$WORKSPACE_NAME" false -var-file=$VARFILE $ARGS
   fi
 else
-  workspace_account_destroy "$DIR/provision/log-delivery" $ACCOUNT_NAME -var-file=$VARFILE $ARGS
+  workspace_account_destroy "$DIR/provision/account-level" $ACCOUNT_NAME -var-file=$VARFILE $ARGS
 fi
