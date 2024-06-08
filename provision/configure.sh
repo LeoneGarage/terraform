@@ -261,13 +261,13 @@ if [ -n "$FROND_END_PL_SOURCE_SUBNET_IDS" ]; then
   TFAPPLY_ARGS+=( -var="front_end_pl_source_subnet_ids=$FROND_END_PL_SOURCE_SUBNET_IDS")
 fi
 
-if [ -n "$IMPORT_ADDR" ] ; then
-  TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
-fi
-
 if [[ -n "$PRIVATE_DNS_ENABLED" && ( "$PRIVATE_DNS_ENABLED" = "true" || "$PRIVATE_DNS_ENABLED" = "false" ) ]]; then
   TFAPPLY_ARGS+=( -var="private_dns_enabled=$PRIVATE_DNS_ENABLED")
 fi 
+
+if [ -n "$IMPORT_ADDR" ] ; then
+  TFAPPLY_ARGS+=( -target="$IMPORT_ADDR" $IMPORT_ADDR $IMPORT_ID)
+fi
 
 # Apply terraform template to provision AWS and Databricks infra for a Workspace
 # If $FRONT_END_PL_SUBNET_IDS is provided will also create Front End VPC Endpoint in those subnets
