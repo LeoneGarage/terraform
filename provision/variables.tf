@@ -1,7 +1,7 @@
-variable "databricks_account_username" {
+variable "databricks_client_id" {
   type = string
 }
-variable "databricks_account_password" {
+variable "databricks_client_secret" {
   type = string
   sensitive = true
 }

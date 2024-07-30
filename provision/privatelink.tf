@@ -168,7 +168,6 @@ resource "databricks_mws_vpc_endpoint" "relay" {
 resource "databricks_mws_private_access_settings" "pas" {
   count = var.private_link ? 1 : 0
   provider                     = databricks.mws
-  account_id                   = var.databricks_account_id
   private_access_settings_name = "Private Access Settings for ${local.prefix}"
   region                       = var.region
   public_access_enabled        = var.front_end_access == "private" ? false : true
