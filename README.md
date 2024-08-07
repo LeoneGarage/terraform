@@ -34,10 +34,10 @@ The whole thing is executed by running ./configure.sh script from root directory
 2. Clone this repo to your machine.
 3. Make sure you've configured your AWS CLI credentials with the AWS Account you want to deploy to.
 4. Create a file called *secrets.tfvars* in directory you will be calling *configure.sh* or the other scripts from. You can put *secrets.tfvars* in any directory of your choice, just make sure you are in that directory when calling *configure.sh* or other scripts. This file should have the following variables:
-> databricks_account_id       = "\<databricks account id>"<br>
-> databricks_account_name     = "\<databricks account name>"<br>
-> databricks_account_username = "\<databricks account owner username>"<br>
-> databricks_account_password = "\<databricks account owner password>"<br>
+> databricks_account_id    = "\<databricks account id>"<br>
+> databricks_account_name  = "\<databricks account name>"<br>
+> databricks_client_id     = "\<databricks service principal client id>"<br>
+> databricks_client_secret = "\<databricks service principal client secret>"<br>
 
 These are your Databricks Account Id that you can get from Databricks Account Console, your Databricks Account Name which will be used to prefix the name of Log Delivery S3 bucket and related AWS resources since these are account wide resources, your Databricks Account Owner User Name and Databricks Account Owner Password. If you don't have Databricks Account Id you can sign up for a 14 free trial in https://databricks.com/try-databricks to get it.
 Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
