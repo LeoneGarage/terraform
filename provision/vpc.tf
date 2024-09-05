@@ -11,13 +11,6 @@ locals {
       {
           "Action": [
               "sts:AssumeRole",
-              "sts:AssumeRoleWithSAML",
-              "sts:AssumeRoleWithWebIdentity",
-              "sts:DecodeAuthorizationMessage",
-              "sts:GetAccessKeyInfo",
-              "sts:GetCallerIdentity",
-              "sts:GetFederationToken",
-              "sts:GetServiceBearerToken",
               "sts:GetSessionToken",
               "sts:TagSession"
           ],
@@ -25,8 +18,7 @@ locals {
           "Resource": "*",
           "Principal": {
               "AWS": [
-                        "414351767826",
-                        "arn:aws:iam::414351767826:user/databricks-datasets-readonly-user"
+                        "414351767826"
                      ]
           }
       },
