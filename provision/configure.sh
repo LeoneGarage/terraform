@@ -156,6 +156,7 @@ if [ -n "$VARFILE" ]; then
   VARFILE="$(cd "$(dirname "$VARFILE")"; pwd)/$(basename "$VARFILE")"
 fi
 
+terraform -chdir=$DIR init
 CURR_W=$(terraform -chdir=$DIR/.. workspace show)
 if [ -z "$WORKSPACE_NAME" ]; then
   if [ "$CURR_W" != "default" ]; then
@@ -233,7 +234,6 @@ if [ -n "$METASTORE_ID" ]; then
   TFAPPLY_ARGS+=( -var="metastore_id=$METASTORE_ID")
 fi
 
-terraform -chdir=$DIR init
 if [ -n "$ACCOUNT_LEVEL" ] && [ "$ACCOUNT_LEVEL" != "false" ]; then
   workspace_create_if_not_exists "$DIR" $ACCOUNT_NAME
   workspace_select "$DIR" $ACCOUNT_NAME

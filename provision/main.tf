@@ -9,6 +9,11 @@ terraform {
       version = "~> 4.15.0"
     }
   }
+  backend "s3" {
+    bucket = "terraform-state"
+    key    = "databricks/provision.tfstate"
+    region = "ap-southeast-2"
+  }
 }
 
 provider "aws" {
@@ -28,9 +33,19 @@ provider "databricks" {
 }
 
 data "terraform_remote_state" "unity" {
-  backend = "local"
-
+  backend = "s3"
+  workspace = var.databricks_account_name
   config = {
-    path = "account-level/terraform.tfstate.d/${var.databricks_account_name}/terraform.tfstate"
+    bucket = "terraform-state"
+    key    = "databricks/account-level.tfstate"
+    region = "ap-southeast-2"
   }
 }
+
+# data "terraform_remote_state" "unity" {
+#   backend = "local"
+
+#   config = {
+#     path = "account-level/terraform.tfstate.d/${var.databricks_account_name}/terraform.tfstate"
+#   }
+# }

@@ -9,6 +9,11 @@ terraform {
       version = "~> 4.15.0"
     }
   }
+  backend "s3" {
+    bucket = "terraform-state"
+    key    = "databricks/account-level.tfstate"
+    region = "ap-southeast-2"
+  }
 }
 
 provider "aws" {

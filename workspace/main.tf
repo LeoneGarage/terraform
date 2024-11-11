@@ -9,6 +9,12 @@ terraform {
       version = "~> 4.15.0"
     }
   }
+  backend "s3" {
+    bucket = "terraform-state"
+    key    = "databricks/workspace.tfstate"
+    region = "ap-southeast-2"
+  }
+
 }
 
 provider "aws" {
@@ -19,12 +25,22 @@ provider "aws" {
 }
 
 data "terraform_remote_state" "db" {
-  backend = "local"
-
+  backend = "s3"
+  workspace = var.workspace
   config = {
-    path = "../provision/terraform.tfstate.d/${var.workspace}/terraform.tfstate"
+    bucket = "terraform-state"
+    key    = "databricks/provision.tfstate"
+    region = "ap-southeast-2"
   }
 }
+
+# data "terraform_remote_state" "db" {
+#   backend = "local"
+
+#   config = {
+#     path = "../provision/terraform.tfstate.d/${var.workspace}/terraform.tfstate"
+#   }
+# }
 
 provider "databricks" {
   host  = data.terraform_remote_state.db.outputs.databricks_host
