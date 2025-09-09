@@ -33,18 +33,25 @@ The whole thing is executed by running ./configure.sh script from root directory
 1. Install Terraform. For Mac, this is described in https://learn.hashicorp.com/tutorials/terraform/install-cli.
 2. Clone this repo to your machine.
 3. Make sure you've configured your AWS CLI credentials with the AWS Account you want to deploy to.
-4. Create a file called *secrets.tfvars* in directory you will be calling *configure.sh* or the other scripts from. You can put *secrets.tfvars* in any directory of your choice, just make sure you are in that directory when calling *configure.sh* or other scripts. This file should have the following variables:
+4. In each of the following files:
+* **provision/account-level/main.tf**
+* **provision/main.tf**
+* **workspace/main.tf**
+
+  There are backend configuration to store terraform state on S3. Update each backend section, as well as, data "terraform_remote_state" section in those files to reference your bucket and your region for storing terraform state. If you are not using s3 to store terraform state, update each of those sections to work with your terraform state store
+
+5. Create a file called *secrets.tfvars* in directory you will be calling *configure.sh* or the other scripts from. You can put *secrets.tfvars* in any directory of your choice, just make sure you are in that directory when calling *configure.sh* or other scripts. This file should have the following variables:
 > databricks_account_id    = "\<databricks account id>"<br>
 > databricks_account_name  = "\<databricks account name>"<br>
 > databricks_client_id     = "\<databricks service principal client id>"<br>
 > databricks_client_secret = "\<databricks service principal client secret>"<br>
 
-These are your Databricks Account Id that you can get from Databricks Account Console, your Databricks Account Name which will be used to prefix the name of Log Delivery S3 bucket and related AWS resources since these are account wide resources, your Databricks Service Principal Client Id for a Service Principal you created in Account Console and that Service Principal's Client Secret. If you don't have Databricks Account Id you can sign up for a 14 free trial in https://databricks.com/try-databricks to get it.
-Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
+  Are your Databricks Account Id that you can get from Databricks Account Console, your Databricks Account Name which will be used to prefix the name of Log Delivery S3 bucket and related AWS resources since these are account wide resources, your Databricks Service Principal Client Id for a Service Principal you created in Account Console and that Service Principal's Client Secret. If you don't have Databricks Account Id you can sign up for a 14 free trial in https://databricks.com/try-databricks to get it.
+  Be careful with password as secrets in Terraform are stored in plain text. This is why *secrets.tfvars* file is in .gitignore
 
-4. Once you have created *secrets.tfvars* file, run *configure.sh* script and pass to it *-w <your workspace name>* parameter. So for example, if you want to create a Databricks Workspace called **demo**, you would run *./configure.sh -w demo* on command line.
-5. The script will apply the template in *provision* subdirectory and then run the template in *workspace* subdirectory.
-6. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook, created by the templates. You can run Test Notebook on Test cluster to verify that everything is working as it should.
+6. Once you have created *secrets.tfvars* file, run *configure.sh* script and pass to it *-w <your workspace name>* parameter. So for example, if you want to create a Databricks Workspace called **demo**, you would run *./configure.sh -w demo* on command line.
+7. The script will apply the template in *provision* subdirectory and then run the template in *workspace* subdirectory.
+8. If the script runs successfully it will output the url of the newly created workspace that you can access. The Workspace will have a Test cluster and a Test Notebook, created by the templates. You can run Test Notebook on Test cluster to verify that everything is working as it should.
 
 ### Usage
 ./configure.sh [**-igw**] [**-nopl**]  [**-nocmk** all | managed | storage]  [**-w** \<workspace name\>]  [**-r** \<aws region name\>]  [**--front_end_access** private|public]  [**--front_end_pl_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]  [**--front_end_pl_source_subnet_ids** \<subnet_id1\>,\<subnet_id2\>]<br>
