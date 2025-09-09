@@ -150,7 +150,7 @@ resource "databricks_mws_vpc_endpoint" "workspace" {
   provider            = databricks.mws
   account_id          = var.databricks_account_id
   aws_vpc_endpoint_id = aws_vpc_endpoint.workspace[0].id
-  vpc_endpoint_name   = "Workspace Relay for ${module.vpc.vpc_id}"
+  vpc_endpoint_name   = "Workspace Relay of ${local.prefix} for ${module.vpc.vpc_id}"
   region              = var.region
   depends_on          = [aws_vpc_endpoint.workspace]
 }
@@ -160,7 +160,7 @@ resource "databricks_mws_vpc_endpoint" "relay" {
   provider            = databricks.mws
   account_id          = var.databricks_account_id
   aws_vpc_endpoint_id = aws_vpc_endpoint.relay[0].id
-  vpc_endpoint_name   = "VPC Relay for ${module.vpc.vpc_id}"
+  vpc_endpoint_name   = "VPC Relay of ${local.prefix} for ${module.vpc.vpc_id}"
   region              = var.region
   depends_on          = [aws_vpc_endpoint.relay]
 }
