@@ -83,6 +83,27 @@ module "vpc" {
       description = "Hive Metastore Traffic"
     },
     {
+      protocol = "tcp"
+      from_port = 8443
+      to_port = 8443
+      cidr_blocks = "0.0.0.0/0"
+      description = "Internal calls from the Databricks compute plane to the Databricks control plane API"
+    },
+    {
+      protocol = "tcp"
+      from_port = 8444
+      to_port = 8444
+      cidr_blocks = "0.0.0.0/0"
+      description = "Unity Catalog logging and lineage data streaming into Databricks"
+    },
+    {
+      protocol = "tcp"
+      from_port = 8445
+      to_port = 8451
+      cidr_blocks = "0.0.0.0/0"
+      description = "Future extendability"
+    },
+    {
       self = true
       description = "Allow all internal TCP and UDP"
     }
@@ -213,6 +234,33 @@ resource "aws_default_network_acl" "main" {
     to_port     = 0
     protocol    = "all"
     cidr_block  = "${local.cidr_block}"
+  }
+
+  egress {
+    rule_no     = 500
+    action      = "allow"
+    from_port   = 8443
+    to_port     = 8443
+    protocol    = "tcp"
+    cidr_block  = "0.0.0.0/0"
+  }
+
+  egress {
+    rule_no     = 600
+    action      = "allow"
+    from_port   = 8444
+    to_port     = 8444
+    protocol    = "tcp"
+    cidr_block  = "0.0.0.0/0"
+  }
+
+  egress {
+    rule_no     = 700
+    action      = "allow"
+    from_port   = 8445
+    to_port     = 8451
+    protocol    = "tcp"
+    cidr_block  = "0.0.0.0/0"
   }
 
   tags = merge({

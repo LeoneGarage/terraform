@@ -24,6 +24,27 @@ resource "aws_security_group" "pl" {
     protocol         = "tcp"
     cidr_blocks      = local.cidr_blocks
   }
+  ingress {
+    description      = "Internal calls from the Databricks compute plane to the Databricks control plane API"
+    from_port        = 8443
+    to_port          = 8443
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  ingress {
+    description      = "Unity Catalog logging and lineage data streaming into Databricks"
+    from_port        = 8444
+    to_port          = 8444
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  ingress {
+    description      = "Future extendability"
+    from_port        = 8445
+    to_port          = 8451
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
 
   egress {
     description      = "REST API Traffic"
@@ -36,6 +57,27 @@ resource "aws_security_group" "pl" {
     description      = "Relay Traffic"
     from_port        = 6666
     to_port          = 6666
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  egress {
+    description      = "Internal calls from the Databricks compute plane to the Databricks control plane API"
+    from_port        = 8443
+    to_port          = 8443
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  egress {
+    description      = "Unity Catalog logging and lineage data streaming into Databricks"
+    from_port        = 8444
+    to_port          = 8444
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  egress {
+    description      = "Future extendability"
+    from_port        = 8445
+    to_port          = 8451
     protocol         = "tcp"
     cidr_blocks      = local.cidr_blocks
   }
