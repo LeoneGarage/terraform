@@ -14,6 +14,10 @@ variable "databricks_account_name" {
   type = string
 }
 
+variable "databricks_object_owner" {
+  type = string
+}
+
 variable "aws_access_key" {
   default = ""
 }

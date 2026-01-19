@@ -11,6 +11,7 @@ data "aws_caller_identity" "current" {}
 resource "aws_s3_bucket" "metastore" {
   count = var.metastore_id=="" ? 1 : 0
   bucket = "${var.databricks_account_name}-metastore"
+  tags = { Owner = var.databricks_object_owner }
   // destroy all objects with bucket destroy
   force_destroy = true
 }
@@ -78,12 +79,13 @@ resource "aws_iam_policy" "metastore_data_access" {
       {
         "Action" : [
           "s3:GetObject",
-          "s3:GetObjectVersion",
           "s3:PutObject",
-          "s3:PutObjectAcl",
           "s3:DeleteObject",
           "s3:ListBucket",
-          "s3:GetBucketLocation"
+          "s3:GetBucketLocation",
+          "s3:ListBucketMultipartUploads",
+          "s3:ListMultipartUploadParts",
+          "s3:AbortMultipartUpload"
         ],
         "Resource" : [
           aws_s3_bucket.metastore[0].arn,
@@ -113,7 +115,8 @@ resource "aws_iam_role" "metastore_data_access" {
   assume_role_policy  = data.aws_iam_policy_document.passrole_for_uc.json
   managed_policy_arns = [aws_iam_policy.metastore_data_access[0].arn]
   tags = merge(var.tags, {
-    Name = "${local.prefix}-unity-catalog metastore access IAM role"
+    Name = "${local.prefix}-unity-catalog metastore access IAM role",
+    Owner = var.databricks_object_owner
   })
 }
 

@@ -13,7 +13,9 @@ resource "aws_iam_role" "user_role" {
       },
     ]
   })
-  tags               = var.tags
+  tags               = merge(var.tags, {
+                         Owner = var.databricks_object_owner
+                       })
 }
 
 locals {
