@@ -105,7 +105,8 @@ resource "aws_iam_policy" "metastore_data_access" {
     ]
   })
   tags = merge(var.tags, {
-    Name = "${local.prefix}-unity-catalog metastore IAM policy"
+    Name = "${local.prefix}-unity-catalog metastore IAM policy",
+    Owner = var.databricks_object_owner
   })
 }
 

@@ -3,7 +3,8 @@ resource "aws_s3_bucket" "root_storage_bucket" {
   bucket = "rootbucket-${local.prefix}"
   force_destroy = true
   tags = merge(var.tags, {
-    Name = "rootbucket-${local.prefix}"
+    Name = "rootbucket-${local.prefix}",
+    Owner = var.databricks_object_owner
   })
 }
 

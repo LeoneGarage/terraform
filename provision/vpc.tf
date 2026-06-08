@@ -47,7 +47,9 @@ module "vpc" {
   name = "${local.prefix}-vpc"
   cidr = local.cidr_block
   azs  = local.azs
-  tags = var.tags
+  tags = merge(var.tags, {
+                         Owner = var.databricks_object_owner
+                       })
 
   enable_dns_hostnames = true
   enable_nat_gateway   = var.allow_outgoing_internet || !var.private_link
@@ -84,6 +86,13 @@ module "vpc" {
     },
     {
       protocol = "tcp"
+      from_port = 2443
+      to_port = 2443
+      cidr_blocks = "0.0.0.0/0"
+      description = "Supports FIPS encryption. Only required if you enable the compliance security profile"
+    },
+    {
+      protocol = "tcp"
       from_port = 8443
       to_port = 8443
       cidr_blocks = "0.0.0.0/0"
@@ -95,6 +104,13 @@ module "vpc" {
       to_port = 8444
       cidr_blocks = "0.0.0.0/0"
       description = "Unity Catalog logging and lineage data streaming into Databricks"
+    },
+    {
+      protocol = "tcp"
+      from_port = 5432
+      to_port = 5432
+      cidr_blocks = "0.0.0.0/0"
+      description = "lakebase"
     },
     {
       protocol = "tcp"
@@ -130,7 +146,8 @@ module "vpc_endpoints" {
         module.vpc.private_route_table_ids,
       module.vpc.public_route_table_ids])
       tags = merge({
-        Name = "${local.prefix}-s3-vpc-endpoint"
+        Name = "${local.prefix}-s3-vpc-endpoint",
+        Owner = var.databricks_object_owner
       },
       var.tags)
     },
@@ -140,7 +157,8 @@ module "vpc_endpoints" {
       subnet_ids          = module.vpc.private_subnets
       policy              = jsonencode(local.policy_json_sts)
       tags = merge({
-        Name = "${local.prefix}-sts-vpc-endpoint"
+        Name = "${local.prefix}-sts-vpc-endpoint",
+        Owner = var.databricks_object_owner
       },
       var.tags)
     },
@@ -149,7 +167,8 @@ module "vpc_endpoints" {
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
       tags = merge({
-        Name = "${local.prefix}-kinesis-vpc-endpoint"
+        Name = "${local.prefix}-kinesis-vpc-endpoint",
+        Owner = var.databricks_object_owner
       },
       var.tags)
     },
@@ -158,14 +177,16 @@ module "vpc_endpoints" {
       private_dns_enabled = true
       subnet_ids          = module.vpc.private_subnets
       tags = merge({
-        Name = "${local.prefix}-glue-vpc-endpoint"
+        Name = "${local.prefix}-glue-vpc-endpoint",
+        Owner = var.databricks_object_owner
       },
       var.tags)
     }
   }
 
   tags = merge({
-                  Name = "${local.prefix}-databricks-vpc"
+                  Name = "${local.prefix}-databricks-vpc",
+                  Owner = var.databricks_object_owner
                },
                var.tags)
 }
@@ -237,6 +258,15 @@ resource "aws_default_network_acl" "main" {
   }
 
   egress {
+    rule_no     = 450
+    action      = "allow"
+    from_port   = 2443
+    to_port     = 2443
+    protocol    = "tcp"
+    cidr_block  = "0.0.0.0/0"
+  }
+
+  egress {
     rule_no     = 500
     action      = "allow"
     from_port   = 8443
@@ -263,8 +293,18 @@ resource "aws_default_network_acl" "main" {
     cidr_block  = "0.0.0.0/0"
   }
 
+  egress {
+    rule_no     = 800
+    action      = "allow"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_block  = "0.0.0.0/0"
+  }
+
   tags = merge({
-    Name = "${local.prefix}-default-vpc-nacl"
+    Name = "${local.prefix}-default-vpc-nacl",
+    Owner = var.databricks_object_owner
   },
   var.tags)
 }

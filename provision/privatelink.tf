@@ -25,6 +25,20 @@ resource "aws_security_group" "pl" {
     cidr_blocks      = local.cidr_blocks
   }
   ingress {
+    description      = "Supports FIPS encryption. Only required if you enable the compliance security profile"
+    from_port        = 2443
+    to_port          = 2443
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  ingress {
+    description      = "Classic compute plane to Lakebase"
+    from_port        = 5432
+    to_port          = 5432
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  ingress {
     description      = "Internal calls from the Databricks compute plane to the Databricks control plane API"
     from_port        = 8443
     to_port          = 8443
@@ -61,6 +75,20 @@ resource "aws_security_group" "pl" {
     cidr_blocks      = local.cidr_blocks
   }
   egress {
+    description      = "Classic compute plane to Lakebase"
+    from_port        = 5432
+    to_port          = 5432
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  egress {
+    description      = "Supports FIPS encryption. Only required if you enable the compliance security profile"
+    from_port        = 2443
+    to_port          = 2443
+    protocol         = "tcp"
+    cidr_blocks      = local.cidr_blocks
+  }
+  egress {
     description      = "Internal calls from the Databricks compute plane to the Databricks control plane API"
     from_port        = 8443
     to_port          = 8443
@@ -83,7 +111,8 @@ resource "aws_security_group" "pl" {
   }
 
   tags = merge({
-    Name = "${local.prefix}-PL-sg"
+    Name = "${local.prefix}-PL-sg",
+    Owner = var.databricks_object_owner
   },
   var.tags)
 }
@@ -91,7 +120,8 @@ resource "aws_security_group" "pl" {
 resource "aws_vpc_endpoint" "workspace" {
   count = var.private_link ? 1 : 0
   tags = merge({
-    Name = "${local.prefix}-db-workspace-vpc-endpoint"
+    Name = "${local.prefix}-db-workspace-vpc-endpoint",
+    Owner = var.databricks_object_owner
   },
   var.tags)
   vpc_id             = module.vpc.vpc_id
@@ -110,7 +140,8 @@ resource "aws_vpc_endpoint" "workspace" {
 resource "aws_vpc_endpoint" "relay" {
   count = var.private_link ? 1 : 0
   tags = merge({
-    Name = "${local.prefix}-db-relay-vpc-endpoint"
+    Name = "${local.prefix}-db-relay-vpc-endpoint",
+    Owner = var.databricks_object_owner
   },
   var.tags)
   vpc_id             = module.vpc.vpc_id
@@ -132,7 +163,8 @@ resource "aws_subnet" "pl_subnets" {
   availability_zone = data.aws_availability_zones.available.names[each.value]
   cidr_block = local.small_subnet_cidrs[each.value]
   tags = merge({
-    Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[each.value]}"
+    Name = "${local.prefix}-pl-subnet-${data.aws_availability_zones.available.names[each.value]}",
+    Owner = var.databricks_object_owner
   },
   var.tags)
 }
@@ -164,7 +196,8 @@ resource "aws_route_table" "pl_subnet_route_table" {
   vpc_id = module.vpc.vpc_id
 
   tags = merge({
-    Name = "${local.prefix}-pl-subnet-route-table"
+    Name = "${local.prefix}-pl-subnet-route-table",
+    Owner = var.databricks_object_owner
   },
   var.tags)
 }
